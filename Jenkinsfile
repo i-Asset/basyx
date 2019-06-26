@@ -1,7 +1,7 @@
 pipeline {
   agent {
     kubernetes {
-      label 'my-agent-pod'
+      label 'basyx-' + env.BRANCH_NAME + '-' + env.BUILD_NUMBER
       yaml """
 apiVersion: v1
 kind: Pod
