@@ -9,6 +9,8 @@ spec:
   containers:
   - name: postgresql
     image: postgres:latest
+    command:
+    - cat
     tty: true
     environment:
        POSTGRES_PASSWORD: admin
