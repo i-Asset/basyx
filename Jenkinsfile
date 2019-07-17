@@ -9,8 +9,8 @@ spec:
   containers:
   - name: postgresql
     image: postgres:latest
-    command:
-    - cat
+    command: [ "/usr/local/bin/uid_entrypoint" ]
+    args: [ "cat" ]
     tty: true
     environment:
        POSTGRES_PASSWORD: admin
