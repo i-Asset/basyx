@@ -32,6 +32,8 @@ spec:
       steps {
         container('postgresql') {
         sh '''
+           initdb -D "postgres" -U postgres
+           pg_ctl -D "postgres" start 
            psql -U postgres -f "ci/create_postgres.txt"
         '''
         }
