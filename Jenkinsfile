@@ -11,7 +11,6 @@ spec:
     image: postgres:latest
     command: 
     - cat
-    - "/usr/local/bin/uid_entrypoint"
     tty: true
     environment:
        POSTGRES_PASSWORD: admin
