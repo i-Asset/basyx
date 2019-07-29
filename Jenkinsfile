@@ -32,9 +32,7 @@ spec:
       steps {
         container('postgresql') {
         sh '''
-	   id
-           initdb -D "postgres" -U postgres
-           pg_ctl -D "postgres" start 
+           /usr/local/bin/docker-entrypoint.sh
            psql -U postgres -f "ci/create_postgres.txt"
         '''
         }
