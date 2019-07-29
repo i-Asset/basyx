@@ -32,7 +32,7 @@ spec:
       steps {
         container('postgresql') {
         sh '''
-           /usr/local/bin/docker-entrypoint.sh
+           /usr/local/bin/docker-entrypoint.sh postgres
            psql -U postgres -f "ci/create_postgres.txt"
         '''
         }
