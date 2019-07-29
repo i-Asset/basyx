@@ -12,9 +12,11 @@ spec:
     command: 
     - cat
     tty: true
-    environment:
-       PGDATA: /run/postgresql/data
-       POSTGRES_PASSWORD: admin
+    env:    
+    - name: POSTGRES_PASSWORD              
+      value: admin
+    - name: PGDATA
+      value: /run/postgresql/data
   - name: cmake
     image: rikorose/gcc-cmake:latest
     command:
