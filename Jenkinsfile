@@ -37,8 +37,8 @@ spec:
         sh '''
             id
             echo $PGDATA
-            /usr/local/bin/docker-entrypoint.sh postgres
-            psql -U postgres -f "ci/create_postgres.txt"
+            cp ci/create_postgres.txt /docker-entrypoint-initdb.d/setup.sql
+            /usr/local/bin/docker-entrypoint.sh postgres &
         '''
         }
         container('maven') {
