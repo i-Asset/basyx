@@ -46,7 +46,7 @@ spec:
                               '''
                       }
                       container('postgresql') {
-                          sh '''postgres'''
+                          sh '''postgres &'''
                       }
                   }
               }
