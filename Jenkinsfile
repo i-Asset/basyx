@@ -31,33 +31,33 @@ spec:
     }
   }
   stages {
-    stage('Run maven') {
-      steps {
-        container('postgresql') {
-        sh '''
-            id
-            echo $PGDATA
-            cp ci/create_postgres.txt /docker-entrypoint-initdb.d/setup.sql
-            /usr/local/bin/docker-entrypoint.sh postgres &
-        '''
-        }
-        container('maven') {
-          sh '''
-GIT_DIFF=$(/usr/bin/git diff --name-only origin/CI_Test)
-JAVA_SDK_CHANGED=$(echo $GIT_DIFF | grep ".*/sdks/java/.*" | wc -l)
-JAVA_COMPONENTS_CHANGED=$(echo $GIT_DIFF | grep "components/.*" | wc -l)
-if [ $((JAVA_SDK_CHANGED > 0)) ];
-then
-    mvn -f ./sdks/java/basys.sdk/pom.xml clean verify
-    mvn -f ./components/basys.components/pom.xml clean verify
-elif [ $((JAVA_COMPONENTS_CHANGED > 0)) ];
-then
-    mvn -f ./components/basys.components/pom.xml clean verify
-fi
-        '''
-        }
+      stage('Parallel CI') {
+          parallel {
+              stage('PostgreSQL') {
+                  steps {
+                      container('postgresql') {
+                          sh '''
+                              id
+                              pwd
+                              ./ci/init_postgres.sh postgres
+                              '''
+                      }
+                      container('postgresql') {
+                          sh '''postgres'''
+                      }
+                  }
+              }
+              stage('Maven') {
+                  steps {
+                      container('maven') {
+                          sh '''
+                              echo OK
+                              '''
+                      }
+                  }
+              }
+          }
       }
-    }
   }
 }
 
