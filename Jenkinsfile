@@ -39,6 +39,9 @@ spec:
                           sh '''
                               id
                               pwd
+                              ls -lah
+                              ls -lah ci
+                              chmod +x ./ci/init_postgres.sh
                               ./ci/init_postgres.sh postgres
                               '''
                       }
