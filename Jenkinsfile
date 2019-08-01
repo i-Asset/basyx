@@ -24,6 +24,13 @@ spec:
     tty: true
   - name: maven
     image: maven:latest
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
     command:
     - cat
     tty: true
