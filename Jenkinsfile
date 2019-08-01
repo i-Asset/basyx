@@ -67,6 +67,7 @@ spec:
           steps {
               container('maven') {
                   sh '''
+                     chmod +x ./ci/build_java.sh
                      ./ci/build_java.sh
                      '''
               }
