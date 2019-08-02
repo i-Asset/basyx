@@ -11,10 +11,10 @@ JAVA_EXAMPLES_CHANGED=$(echo $GIT_DIFF | grep "examples/.*" | wc -l)
 
 #if [ $((JAVA_SDK_CHANGED > 0)) ];
 #then
-    $MVN -f ./sdks/java/basys.sdk/pom.xml verify
+    $MVN -f ./sdks/java/basys.sdk/pom.xml install 
 #elif [ $((JAVA_COMPONENTS_CHANGED > 0)) ];
 #then
-    $MVN -f ./components/basys.components/pom.xml verify
+    $MVN -f ./components/basys.components/pom.xml install
 #elif [ $((JAVA_EXAMPLES_CHANGED > 0)) ];
 #then
     $MVN -f ./examples/basys.examples/pom.xml verify
