@@ -18,7 +18,7 @@ JAVA_EXAMPLES_CHANGED=$(echo $GIT_DIFF | grep "examples/.*" | wc -l)
     cd "$CWD"
 #elif [ $((JAVA_COMPONENTS_CHANGED > 0)) ];
 #then
-    cd ./components/basys.components/pom.xml
+    cd ./components/basys.components
     $MVN install
     cd "$CWD"
 #elif [ $((JAVA_EXAMPLES_CHANGED > 0)) ];
