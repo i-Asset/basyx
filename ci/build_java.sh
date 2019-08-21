@@ -3,6 +3,8 @@
 ##
 MVN="mvn -ntp"
 
+CWD=$(pwd)
+
 GIT_DIFF=$(/usr/bin/git diff --name-only origin/CI_Test)
 
 JAVA_SDK_CHANGED=$(echo $GIT_DIFF | grep ".*/sdks/java/.*" | wc -l)
@@ -11,11 +13,17 @@ JAVA_EXAMPLES_CHANGED=$(echo $GIT_DIFF | grep "examples/.*" | wc -l)
 
 #if [ $((JAVA_SDK_CHANGED > 0)) ];
 #then
-    $MVN -f ./sdks/java/basys.sdk/pom.xml install 
+    cd ./sdks/java/basys.sdk
+    $MVN install
+    cd "$CWD"
 #elif [ $((JAVA_COMPONENTS_CHANGED > 0)) ];
 #then
-    $MVN -f ./components/basys.components/pom.xml install
+    cd ./components/basys.components/pom.xml
+    $MVN install
+    cd "$CWD"
 #elif [ $((JAVA_EXAMPLES_CHANGED > 0)) ];
 #then
-    $MVN -f ./examples/basys.examples/pom.xml verify
+    cd ./examples/basys.examples
+    $MVN verify
+    cd "$CWD"
 #fi
