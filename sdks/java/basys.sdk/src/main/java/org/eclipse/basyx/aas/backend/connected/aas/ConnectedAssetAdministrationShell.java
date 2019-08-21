@@ -19,6 +19,9 @@ import org.eclipse.basyx.aas.backend.connected.ConnectedVABModelMap;
 import org.eclipse.basyx.aas.backend.connected.facades.ConnectedHasDataSpecificationFacade;
 import org.eclipse.basyx.aas.backend.connected.facades.ConnectedIdentifiableFacade;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.AssetAdministrationShell;
+import org.eclipse.basyx.aas.metamodel.hashmap.aas.qualifier.Referable;
+import org.eclipse.basyx.aas.metamodel.hashmap.aas.reference.Reference;
+import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
 import org.eclipse.basyx.vab.core.VABConnectionManager;
 import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
 /**
@@ -159,12 +162,12 @@ public class ConnectedAssetAdministrationShell extends ConnectedVABModelMap<Obje
 	
 	@Override
 	public String getId() {
-	return (String)getProxy().readElementValue(constructPath(AssetAdministrationShell.IDSHORT));
+	return (String)getProxy().readElementValue(constructPath(Referable.IDSHORT));
 	}
 
 	@Override
 	public void setId(String id) {
-		getProxy().updateElementValue(constructPath(AssetAdministrationShell.IDSHORT), id);
+		getProxy().updateElementValue(constructPath(Referable.IDSHORT), id);
 		
 	}
 
@@ -177,9 +180,9 @@ public class ConnectedAssetAdministrationShell extends ConnectedVABModelMap<Obje
 
 		try {
 			// Java getSubmodels
-			refs = (Set<Map<?, ?>>) getProxy().readElementValue(constructPath("submodel"));
+			refs = (Set<Map<?, ?>>) getProxy().readElementValue(constructPath(AssetAdministrationShell.SUBMODEL));
 			for (Map<?, ?> key : refs) {
-				String id = (String) ((Map<?, ?>) ((List<?>) key.get("keys")).get(0)).get("value");
+				String id = (String) ((Map<?, ?>) ((List<?>) key.get(Reference.KEY)).get(0)).get(Property.VALUE);
 				VABElementProxy elem = manager.connectToVABElement(id);
 				ISubModel sm = new ConnectedSubModel("/aas/submodels/" + id, elem);
 				ret.put(id, sm);
@@ -187,9 +190,9 @@ public class ConnectedAssetAdministrationShell extends ConnectedVABModelMap<Obje
 		} catch (ClassCastException e) {
 			System.out.println("Cast failed... trying c# get submodels");
 			// c# getSubmodels
-			refs = (Set<Map<?, ?>>) getProxy().readElementValue(constructPath("submodels"));
+			refs = (Set<Map<?, ?>>) getProxy().readElementValue(constructPath(AssetAdministrationShell.SUBMODELS));
 			for (Map<?, ?> key : refs) {
-				String id = (String) key.get("idShort");
+				String id = (String) key.get(Referable.IDSHORT);
 				VABElementProxy elem = manager.connectToVABElement(id);
 				ISubModel sm = new ConnectedSubModel("/aas/submodels/" + id, elem);
 				ret.put(id, sm);
@@ -204,6 +207,49 @@ public class ConnectedAssetAdministrationShell extends ConnectedVABModelMap<Obje
 	@Override
 	public void addSubModel(ISubModel subModel) {
 		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public String getIdshort() {
+		return (String) getProxy().readElementValue(constructPath(Referable.IDSHORT));
+	}
+
+	@Override
+	public String getCategory() {
+		return (String) getProxy().readElementValue(constructPath(Referable.CATEGORY));
+	}
+
+	@Override
+	public String getDescription() {
+		return (String) getProxy().readElementValue(constructPath(Referable.DESCRIPTION));
+	}
+
+	@Override
+	public IReference  getParent() {
+		return (IReference)getProxy().readElementValue(constructPath(Referable.PARENT));
+	}
+
+	@Override
+	public void setIdshort(String idShort) {
+		getProxy().updateElementValue(constructPath(Referable.IDSHORT), idShort);
+		
+	}
+
+	@Override
+	public void setCategory(String category) {
+		getProxy().updateElementValue(constructPath(Referable.CATEGORY), category);
+		
+	}
+
+	@Override
+	public void setDescription(String description) {
+		getProxy().updateElementValue(constructPath(Referable.DESCRIPTION), description);
+		
+	}
+
+	@Override
+	public void setParent(IReference  obj) {
+		getProxy().updateElementValue(constructPath(Referable.PARENT), obj);
 		
 	}
 }

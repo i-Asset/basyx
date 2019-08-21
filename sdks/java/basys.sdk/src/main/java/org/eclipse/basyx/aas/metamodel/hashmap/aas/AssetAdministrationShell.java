@@ -19,6 +19,7 @@ import org.eclipse.basyx.aas.api.resources.ISubModel;
 import org.eclipse.basyx.aas.metamodel.facades.AssetAdministrationShellFacade;
 import org.eclipse.basyx.aas.metamodel.facades.HasDataSpecificationFacade;
 import org.eclipse.basyx.aas.metamodel.facades.IdentifiableFacade;
+import org.eclipse.basyx.aas.metamodel.facades.ReferableFacade;
 import org.eclipse.basyx.aas.metamodel.hashmap.VABModelMap;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.descriptor.SubmodelDescriptor;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.parts.ConceptDictionary;
@@ -45,14 +46,17 @@ import org.eclipse.basyx.aas.metamodel.hashmap.aas.security.Security;
 public class AssetAdministrationShell extends VABModelMap<Object> implements IAssetAdministrationShell  {
 	
 	
-	public static final String SECURITY ="security";
-	public static final String DERIVEDFROM ="derivedFrom";
-	public static final String ASSET="asset";
-	public static final String SUBMODEL ="submodel";
-	public static final String SUBMODELS ="submodels";
-	public static final String VIEWS="views";
-	public static final String CONCEPTDICTIONARY="conceptDictionary";
-	public static final String IDSHORT="idShort";
+	public static final String SECURITY = "security";
+	public static final String DERIVEDFROM = "derivedFrom";
+	public static final String ASSET = "asset";
+	public static final String SUBMODEL = "submodel";
+	public static final String SUBMODELS = "submodels";
+	public static final String VIEWS = "views";
+	public static final String CONCEPTDICTIONARY = "conceptDictionary";
+	public static final String TYPE = "type";
+	public static final String ADDRESS = "address";
+	public static final String ENDPOINTS = "endpoints";
+	public static final String IDSEMANTICS="id_semantics";
 	
 
 	/**
@@ -95,15 +99,15 @@ public class AssetAdministrationShell extends VABModelMap<Object> implements IAs
 	
 	public void setEndpoint(String endpoint, String endpointType) {
 		HashMap<String, String> endpointWrapper = new HashMap<String, String>(); 
-		endpointWrapper.put("type", endpointType);
-		endpointWrapper.put("address", endpoint + "/aas");
+		endpointWrapper.put(TYPE, endpointType);
+		endpointWrapper.put(ADDRESS, endpoint + "/aas");
 		
-		put("endpoints", Arrays.asList(endpointWrapper));
+		put(ENDPOINTS, Arrays.asList(endpointWrapper));
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<HashMap<String, String>> getEndpoints(){
-		return (List<HashMap<String, String>>) get("endpoints");
+		return (List<HashMap<String, String>>) get(ENDPOINTS);
 	}
 	
 	/**
@@ -246,5 +250,48 @@ public class AssetAdministrationShell extends VABModelMap<Object> implements IAs
 	@Override
 	public Map<String, ISubModel> getSubModels() {
 		return new AssetAdministrationShellFacade(this).getSubModels();
+	}
+	@Override
+	public String getIdshort() {
+	return new ReferableFacade(this).getIdshort();
+	}
+
+	@Override
+	public String getCategory() {
+		return new ReferableFacade(this).getCategory();
+	}
+
+	@Override
+	public String getDescription() {
+		return new ReferableFacade(this).getDescription();
+	}
+
+	@Override
+	public IReference  getParent() {
+		return new ReferableFacade(this).getParent();
+	}
+
+	@Override
+	public void setIdshort(String idShort) {
+		new ReferableFacade(this).setIdshort(idShort);
+		
+	}
+
+	@Override
+	public void setCategory(String category) {
+		new ReferableFacade(this).setCategory(category);
+		
+	}
+
+	@Override
+	public void setDescription(String description) {
+		new ReferableFacade(this).setDescription(description);
+		
+	}
+
+	@Override
+	public void setParent(IReference  obj) {
+		new ReferableFacade(this).setParent(obj);
+		
 	}
 }

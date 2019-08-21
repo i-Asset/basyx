@@ -1,6 +1,5 @@
 package org.eclipse.basyx.vab.provider;
 
-import java.util.Map;
 import java.util.function.Function;
 
 import org.eclipse.basyx.vab.core.IModelProvider;
@@ -29,27 +28,35 @@ public class VABModelProvider implements IModelProvider {
 
 	@Override
 	public Object getModelPropertyValue(String path) throws Exception {
-		if (VABPathTools.isEmptyPath(path)) {
+		// Check empty paths
+		if (path == null) {
+			throw new RuntimeException("Path is undefined");
+		} else if (VABPathTools.isEmptyPath(path)) {
 			return handler.postprocessObject(elements);
 		}
 
-		Object parentElement = getParentElement(path);
-		String propertyName = VABPathTools.getLastElement(path);
-		if (parentElement != null && propertyName != null) {
-			return handler.postprocessObject(handler.getElementProperty(parentElement, propertyName));
-
-		}
-		return null;
+		Object element = getTargetElement(path);
+		return handler.postprocessObject(element);
 	}
 
 	@Override
 	public void setModelPropertyValue(String path, Object newValue) throws Exception {
+		// Check empty paths
+		if (path == null) {
+			throw new RuntimeException("Path is undefined");
+		} else if (VABPathTools.isEmptyPath(path)) {
+			// Empty path => parent element == null => replace root, if it exists
+			if (elements != null) {
+				elements = handler.preprocessObject(newValue);
+			}
+			return;
+		}
+
 		Object parentElement = getParentElement(path);
 		String propertyName = VABPathTools.getLastElement(path);
-		
+
 		// Only write values, that already exist
 		Object thisElement = handler.getElementProperty(parentElement, propertyName);
-		
 		if (parentElement != null && propertyName != null && thisElement != null) {
 			newValue = handler.preprocessObject(newValue);
 			handler.setModelPropertyValue(parentElement, propertyName, newValue);
@@ -58,29 +65,23 @@ public class VABModelProvider implements IModelProvider {
 
 	@Override
 	public void createValue(String path, Object newValue) throws Exception {
-		System.out.println("CRCRCR3:"+path+" -- "+newValue);
-		
-		// Local variables
-		Object parentElement = getParentElement(path);
-		String propertyName = VABPathTools.getLastElement(path);
-		
-		System.out.println("CRCRCR4:"+propertyName+" -- "+parentElement);
-
-		
-		// Do not process "null" paths
-		if (path == null) return;
-		
-		// Corner case - the complete map should be replaced (path "/" or "")
-		if ((path.length() == 0) || (path.equals("/"))) {
-			// Overwrite elements
-			elements = newValue;
-			
-			// End processing
+		// Check empty paths
+		if (path == null) {
+			throw new RuntimeException("Path is undefined");
+		} else if (VABPathTools.isEmptyPath(path)) {
+			// The complete model should be replaced if it does not exist
+			if (elements == null) {
+				elements = handler.preprocessObject(newValue);
+			}
 			return;
 		}
 
-		// All other cases
-		if (parentElement != null && propertyName != null) {
+		// Find parent & name of new element
+		Object parentElement = getParentElement(path);
+		String propertyName = VABPathTools.getLastElement(path);
+
+		// Only create new, never replace existing elements
+		if (parentElement != null) {
 			newValue = handler.preprocessObject(newValue);
 			Object childElement = handler.getElementProperty(parentElement, propertyName);
 			if (childElement == null) {
@@ -88,17 +89,19 @@ public class VABModelProvider implements IModelProvider {
 			} else {
 				handler.createValue(childElement, newValue);
 			}
-			
-			// End processing
 			return;
 		}
-		
-		// Indicate error
-		throw new RuntimeException("Undefined parent element requested");
+
+		System.out.println("Could not create element, parent element does not exist for path '" + path + "'");
 	}
 
 	@Override
 	public void deleteValue(String path) throws Exception {
+		// Check null path
+		if (path == null) {
+			throw new RuntimeException("Path is undefined");
+		}
+
 		Object parentElement = getParentElement(path);
 		String propertyName = VABPathTools.getLastElement(path);
 		if (parentElement != null && propertyName != null) {
@@ -108,6 +111,11 @@ public class VABModelProvider implements IModelProvider {
 
 	@Override
 	public void deleteValue(String path, Object obj) throws Exception {
+		// Check null path
+		if (path == null) {
+			throw new RuntimeException("Path is undefined");
+		}
+
 		Object parentElement = getParentElement(path);
 		String propertyName = VABPathTools.getLastElement(path);
 		if (parentElement != null && propertyName != null) {
@@ -121,49 +129,12 @@ public class VABModelProvider implements IModelProvider {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Object invokeOperation(String path, Object[] parameters) throws Exception {
-		System.out.println("OPERATION INVOKE:"+path+" "+elements);
-		
-		// Object to be invoked
-		Object childElement = null;
-		
-		// Corner case, only an operation is provided
-		if (path.length() == 0 || path.equals("/")) {
-			childElement = elements;
-		} else {
-			Object parentElement = getParentElement(path);
-			String operationName = VABPathTools.getLastElement(path);
-			if (parentElement != null && operationName != null) {
-				childElement = handler.getElementProperty(parentElement, operationName);
-			}
-		}
-		
-		// Invoke operation
+		Object childElement = getModelPropertyValue(path);
+
+		// Invoke operation for function interfaces
 		if (childElement != null && childElement instanceof Function<?, ?>) {
-			
-			// unwrap parameters
-			int i = 0;
-			for (Object param : parameters) {
-				if (param instanceof Map<?,?>) {
-					Map<String, Object> map = (Map<String, Object>) param;
-					
-					if (map.get("valueType") != null && map.get("value") != null) {
-						parameters[i] = map.get("value");
-					}
-				}
-				i++;
-			}
-			
-			
 			Function<Object, Object[]> function = (Function<Object, Object[]>) childElement;
 			return function.apply(parameters);
-		} else {
-			if (childElement instanceof Map<?,?> && ((Map<?,?>) childElement).containsKey("invokable")) {
-				// Build path
-				if (path.endsWith("/"))
-					return invokeOperation(path+"invokable", parameters);
-				else 
-					return invokeOperation(path+"/invokable", parameters); // TODO C# needs to be adapted so C# can invoke operations on java
-			}
 		}
 
 		// No operation found
@@ -171,9 +142,8 @@ public class VABModelProvider implements IModelProvider {
 	}
 
 	/**
-	 * Get the parent of an element in this provider. The path should include the
-	 * path to the element separated by '/'. E.g., for accessing element c in path
-	 * a/b, the path should be a/b/c.
+	 * Get the parent of an element in this provider. The path should include the path to the element separated by '/'.
+	 * E.g., for accessing element c in path a/b, the path should be a/b/c.
 	 */
 	private Object getParentElement(String path) throws Exception {
 		// Split path into its elements, separated by '/'
@@ -188,5 +158,22 @@ public class VABModelProvider implements IModelProvider {
 			currentElement = handler.getElementProperty(currentElement, pathElements[i]);
 		}
 		return currentElement;
+	}
+
+	/**
+	 * Instead of returning the parent element of a path, this function gives the target element.
+	 * E.g., it returns c for the path a/b/c
+	 */
+	protected Object getTargetElement(String path) throws Exception {
+		if (VABPathTools.isEmptyPath(path)) {
+			return elements;
+		} else {
+			Object parentElement = getParentElement(path);
+			String operationName = VABPathTools.getLastElement(path);
+			if (parentElement != null && operationName != null) {
+				return handler.getElementProperty(parentElement, operationName);
+			}
+		}
+		return null;
 	}
 }

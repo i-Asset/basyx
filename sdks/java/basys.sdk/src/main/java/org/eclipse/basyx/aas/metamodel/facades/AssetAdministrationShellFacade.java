@@ -15,6 +15,7 @@ import org.eclipse.basyx.aas.metamodel.hashmap.aas.identifier.Identifier;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.qualifier.AdministrativeInformation;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.qualifier.HasDataSpecification;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.qualifier.Identifiable;
+import org.eclipse.basyx.aas.metamodel.hashmap.aas.qualifier.Referable;
 /**
  * Facade providing access to a map containing the AssetAdministrationShell structure
  * @author rajashek
@@ -133,12 +134,12 @@ public class AssetAdministrationShellFacade implements IAssetAdministrationShell
 
 	@Override
 	public String getId() {
-	return (String)map.get(AssetAdministrationShell.IDSHORT);
+	return (String)map.get(Referable.IDSHORT);
 	}
 
 	@Override
 	public void setId(String id) {
-		map.put(AssetAdministrationShell.IDSHORT, id);
+		map.put(Referable.IDSHORT, id);
 		
 	}
 
@@ -150,12 +151,56 @@ public class AssetAdministrationShellFacade implements IAssetAdministrationShell
 	
 	@SuppressWarnings("unchecked")
 	public Set<ISubModel> getSubModelsHack() {
-		return (Set<ISubModel>) map.get("submodels");
+		return (Set<ISubModel>) map.get(AssetAdministrationShell.SUBMODELS);
 	}
 
 	@Override
 	public void addSubModel(ISubModel subModel) {
 		throw new RuntimeException("addSubModel on local copy is not supported");
+	}
+	
+	@Override
+	public String getIdshort() {
+		return (String) map.get(Referable.IDSHORT);
+	}
+
+	@Override
+	public String getCategory() {
+		return (String) map.get(Referable.CATEGORY);
+	}
+
+	@Override
+	public String getDescription() {
+		return (String) map.get(Referable.DESCRIPTION);
+	}
+
+	@Override
+	public IReference  getParent() {
+		return (IReference )map.get(Referable.PARENT);
+	}
+
+	@Override
+	public void setIdshort(String idShort) {
+		map.put(Referable.IDSHORT, idShort);
+		
+	}
+
+	@Override
+	public void setCategory(String category) {
+		map.put(Referable.CATEGORY, category);
+		
+	}
+
+	@Override
+	public void setDescription(String description) {
+		map.put(Referable.DESCRIPTION, description);
+		
+	}
+
+	@Override
+	public void setParent(IReference  obj) {
+		map.put(Referable.PARENT, obj);
+		
 	}
 
 }

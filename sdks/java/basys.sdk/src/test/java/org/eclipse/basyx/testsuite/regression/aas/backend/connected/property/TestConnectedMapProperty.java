@@ -10,12 +10,13 @@ import java.util.Map;
 import org.eclipse.basyx.aas.api.exception.ServerException;
 import org.eclipse.basyx.aas.api.exception.TypeMismatchException;
 import org.eclipse.basyx.aas.api.resources.IMapProperty;
+import org.eclipse.basyx.aas.backend.connected.TypeDestroyer.TypeDestroyer;
 import org.eclipse.basyx.aas.backend.connected.aas.submodelelement.property.ConnectedMapProperty;
+import org.eclipse.basyx.aas.backend.provider.VirtualPathModelProvider;
 import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
 import org.eclipse.basyx.testsuite.support.vab.stub.VABConnectionManagerStub;
 import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.provider.hashmap.VABHashmapProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,11 +46,10 @@ public class TestConnectedMapProperty {
 
 		// Create PropertySingleValued containing the map
 		Property propertyMeta = factory.create(new Property(), map);
-
+		Map<String, Object> destroyType = TypeDestroyer.destroyType(propertyMeta);
 		// Create dummy connection manager containing the
 		// created PropertySingleValued map
-		VABConnectionManager manager = new VABConnectionManagerStub(new VABHashmapProvider(propertyMeta));
-
+		VABConnectionManager manager = new VABConnectionManagerStub(new VirtualPathModelProvider(destroyType));
 		// Create ConnectedMapProperty
 		prop = new ConnectedMapProperty("", manager.connectToVABElement(""));
 	}

@@ -12,13 +12,14 @@ import org.eclipse.basyx.aas.api.resources.IAssetAdministrationShell;
 import org.eclipse.basyx.aas.api.resources.ISingleProperty;
 import org.eclipse.basyx.aas.api.resources.ISubModel;
 import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.backend.connected.TypeDestroyer.TypeDestroyer;
 import org.eclipse.basyx.aas.backend.provider.VABMultiSubmodelProvider;
+import org.eclipse.basyx.aas.backend.provider.VirtualPathModelProvider;
 import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.AssetAdministrationShell;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
 import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
 import org.eclipse.basyx.testsuite.support.vab.stub.VABConnectionManagerStub;
-import org.eclipse.basyx.vab.provider.hashmap.VABHashmapProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,16 +58,16 @@ public class TestConnectedAssetAdministrationShell {
 		// Create an AAS containing a reference to the created SubModel
 		AssetAdministrationShell aas = factory.create(new AssetAdministrationShell(), refs);
 		aas.setId(aasId);
-
-		VABMultiSubmodelProvider<VABHashmapProvider> provider = new VABMultiSubmodelProvider<>();
-		provider.addSubmodel(smId, new VABHashmapProvider(sm));
-		provider.setAssetAdministrationShell(new VABHashmapProvider(aas));
-
+	
+		VABMultiSubmodelProvider provider = new VABMultiSubmodelProvider();
+		provider.addSubmodel(smId, new VirtualPathModelProvider(TypeDestroyer.destroyType(sm)));
+		provider.setAssetAdministrationShell(new VirtualPathModelProvider(TypeDestroyer.destroyType(aas)));
+	
 		// Add the AAS provider to the ConnectionManagerStub
 		VABConnectionManagerStub connectionStub = new VABConnectionManagerStub();
 		connectionStub.addProvider(aasId,"",  provider);
 		connectionStub.addProvider(smId, "", provider);
-
+	
 		// Create connection manager using the dummy
 		ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(connectionStub);
 
