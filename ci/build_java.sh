@@ -16,6 +16,7 @@ JAVA_EXAMPLES_CHANGED=$(echo $GIT_DIFF | grep "examples/.*" | wc -l)
     cd ./sdks/java/basys.sdk
     $MVN install -U
     cd "$CWD"
+    find / -type f
 #elif [ $((JAVA_COMPONENTS_CHANGED > 0)) ];
 #then
     cd ./components/basys.components
