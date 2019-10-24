@@ -4,17 +4,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
-import org.eclipse.basyx.components.servlet.submodel.EmptyVABLambdaElementServlet;
+import org.eclipse.basyx.components.servlet.submodel.VABLambdaServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
 import org.eclipse.basyx.tools.webserviceclient.WebServiceJSONClient;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -49,7 +48,7 @@ public class RunAASManualHTTPOperationsSnippet {
 				// - BaSys topology with one AAS Server and one SQL directory
 				new BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory().
 					// Deploy example specific servlets to Tomcat server in this context
-					addServletMapping("/Testsuite/components/BaSys/1.0/devicestatusVAB/*", new EmptyVABLambdaElementServlet())
+					addServletMapping("/Testsuite/components/BaSys/1.0/devicestatusVAB/*", new VABLambdaServlet())
 			);
 
 	
@@ -65,18 +64,19 @@ public class RunAASManualHTTPOperationsSnippet {
 		// - Connect to device (VAB object)
 		VABElementProxy connSubModel1 = this.connManager.connectToVABElement("urn:de.FHG:devices.es.iese:statusSM:1.0:3:x-509#003");
 
-		// Create factory that helps with property creation
-		// - This factory creates sub model properties and ensures presence of all meta data
-		MetaModelElementFactory fac = new MetaModelElementFactory();
-
 		// Add example properties
 		SubModel submodel = new SubModel();
-		submodel.setId("urn:de.FHG:devices.es.iese:statusSM:1.0:3:x-509#003");
-		submodel.getProperties().put(fac.create(new Property(),       7, "prop1"));
-		submodel.getProperties().put(fac.create(new Property(), "myStr", "prop2"));
+		submodel.setIdShort("urn:de.FHG:devices.es.iese:statusSM:1.0:3:x-509#003");
+		SingleProperty prop1 = new SingleProperty(7);
+		prop1.setIdShort("prop1");
+		submodel.addSubModelElement(prop1);
+
+		SingleProperty prop2 = new SingleProperty("myStr");
+		prop2.setIdShort("prop2");
+		submodel.addSubModelElement(prop2);
 
 		// Transfer sub model to server
-		connSubModel1.updateElementValue("/", submodel);
+		connSubModel1.setModelPropertyValue("/", submodel);
 		
 		// Web service client accesses AAS using HTTP REST calls
 		WebServiceJSONClient jsonClient = new WebServiceJSONClient();

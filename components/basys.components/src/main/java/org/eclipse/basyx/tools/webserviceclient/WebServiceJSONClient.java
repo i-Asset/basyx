@@ -1,8 +1,8 @@
 package org.eclipse.basyx.tools.webserviceclient;
 
-import org.eclipse.basyx.aas.api.exception.ServerException;
-import org.eclipse.basyx.aas.backend.http.tools.GSONTools;
-import org.eclipse.basyx.aas.backend.http.tools.factory.DefaultTypeFactory;
+import org.eclipse.basyx.vab.coder.json.serialization.DefaultTypeFactory;
+import org.eclipse.basyx.vab.coder.json.serialization.GSONTools;
+import org.eclipse.basyx.vab.exception.ServerException;
 
 
 

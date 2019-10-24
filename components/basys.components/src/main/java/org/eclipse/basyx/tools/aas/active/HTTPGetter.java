@@ -8,6 +8,7 @@ import org.eclipse.basyx.tools.webserviceclient.WebServiceRawClient;
 
 
 
+
 /**
  * Implement a getter function that queries the value from a HTTP server. Expects a string response.
  * 

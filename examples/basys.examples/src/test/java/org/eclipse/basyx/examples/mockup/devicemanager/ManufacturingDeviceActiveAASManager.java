@@ -2,13 +2,12 @@ package org.eclipse.basyx.examples.mockup.devicemanager;
 
 import java.util.Map;
 
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.AASDescriptor;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
 import org.eclipse.basyx.tools.aas.active.HTTPGetter;
-import org.eclipse.basyx.tools.aasdescriptor.AASDescriptor;
-import org.eclipse.basyx.tools.modelurn.ModelUrn;
-import org.eclipse.basyx.vab.provider.lambda.VABLambdaProviderHelper;
-
-
+import org.eclipse.basyx.vab.modelprovider.lambda.VABLambdaProviderHelper;
 
 /**
  * Example manufacturing device manager code
@@ -35,6 +34,7 @@ public class ManufacturingDeviceActiveAASManager extends ManufacturingDeviceMana
 	/**
 	 * Create the device AAS and sub model structure
 	 */
+	@Override
 	protected void createDeviceAASAndSubModels() {
 		// Invoke base implementation
 		super.createDeviceAASAndSubModels();
@@ -49,12 +49,17 @@ public class ManufacturingDeviceActiveAASManager extends ManufacturingDeviceMana
 		Map<String, Object> dynamicProperty = VABLambdaProviderHelper.createSimple(new HTTPGetter("http://localhost:8080/basys.examples/Mockup/Supplier"), null);
 
 		// Create sub model
-		SubModel supplySM = new SubModel()
+		SubModel supplySM = new SubModel();
+		// - Set submodel ID
+		supplySM.setIdShort("Supply");
 		//   - Property status: indicate device status
-				.putPath("properties/parts/availability", dynamicProperty);
+		SingleProperty availabililtyProp = new SingleProperty(dynamicProperty);
+		availabililtyProp.setIdShort("partAvailability");
+		supplySM.addSubModelElement(availabililtyProp);
+
 
 		// Transfer device sub model to server
-		aasServerConnection.createElement(lookupURN("Supply").toString(), supplySM);
+		aasServerConnection.createValue("/aas/submodels", supplySM);
 	}
 
 
@@ -64,10 +69,10 @@ public class ManufacturingDeviceActiveAASManager extends ManufacturingDeviceMana
 	@Override 
 	protected AASDescriptor getAASDescriptor() {
 		// Create AAS and sub model descriptors
-		AASDescriptor aasDescriptor = createAASDescriptorURI(lookupURN("AAS"));
-		addSubModelDescriptorURI(aasDescriptor, lookupURN("Status"));
-		addSubModelDescriptorURI(aasDescriptor, lookupURN("Supply"));
-		addSubModelDescriptorURI(aasDescriptor, lookupURN("Controller"));
+		AASDescriptor aasDescriptor = new AASDescriptor(lookupURN("AAS"), getAASEndpoint(lookupURN("AAS")));
+		addSubModelDescriptorURI(aasDescriptor, lookupURN("Status"), "Status");
+		addSubModelDescriptorURI(aasDescriptor, lookupURN("Supply"), "Supply");
+		addSubModelDescriptorURI(aasDescriptor, lookupURN("Controller"), "Controller");
 		
 		// Return AAS and sub model descriptors
 		return aasDescriptor;

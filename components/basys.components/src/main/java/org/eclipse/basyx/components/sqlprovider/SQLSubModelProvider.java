@@ -11,7 +11,7 @@ import org.eclipse.basyx.components.provider.BaseConfiguredProvider;
 import org.eclipse.basyx.components.sqlprovider.query.DynamicSQLQuery;
 import org.eclipse.basyx.components.sqlprovider.query.DynamicSQLRunner;
 import org.eclipse.basyx.components.sqlprovider.query.DynamicSQLUpdate;
-import org.eclipse.basyx.vab.provider.lambda.VABLambdaHandler;
+import org.eclipse.basyx.vab.modelprovider.lambda.VABLambdaHandler;
 
 
 
@@ -125,17 +125,24 @@ public class SQLSubModelProvider extends BaseConfiguredProvider {
 
 		
 		// Extract SQL properties
-		sqlUser = cfgValues.getProperty("basyx.sql.dbuser");
-		sqlPass = cfgValues.getProperty("basyx.sql.dbpass");
-		sqlURL  = cfgValues.getProperty("basyx.sql.dburl");
+		sqlUser = cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.DBUSER));
+		sqlPass = cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.DBPASS));
+		sqlURL  = cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.DBURL));
 
 		// Extract SQL driver properties
-		sqlDriver = cfgValues.getProperty("basyx.sql.driver");
-		sqlPrefix = cfgValues.getProperty("basyx.sql.prefix");
+		sqlDriver = cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.DRIVER));
+		sqlPrefix = cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.PREFIX));
 		
 		// Load and parse SQL property and operation connections
-		sqlPropertyConnections.addAll(splitString(cfgValues.getProperty("basyx.sql.properties")));
-		sqlOperationConnections.addAll(splitString(cfgValues.getProperty("basyx.sql.operations")));
+		sqlPropertyConnections.addAll(splitString(cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.PROPERTIES))));
+		sqlOperationConnections.addAll(splitString(cfgValues.getProperty(
+				SQLPreconfiguredSubModelProvider.buildSqlCfgName(SQLPreconfiguredSubModelProvider.OPERATIONS))));
 
 		
 		
@@ -240,7 +247,7 @@ public class SQLSubModelProvider extends BaseConfiguredProvider {
 		
 		System.out.println("Putting SQL:"+name);
 		// Add property as map of lambdas
-		submodelData.getProperties().put(name, createSubmodelElement(name, value, cfgValues));
+		submodelData.getDataElements().put(name, createSubmodelElement(name, value, cfgValues));
 	}
 
 	

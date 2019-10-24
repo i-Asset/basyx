@@ -2,15 +2,13 @@ package org.eclipse.basyx.examples.snippets.aas.deployment.device;
 
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.basyx.aas.backend.connector.JSONConnector;
-import org.eclipse.basyx.aas.backend.connector.basyx.BaSyxConnector;
-import org.eclipse.basyx.aas.backend.provider.VABMultiSubmodelProvider;
-import org.eclipse.basyx.aas.backend.provider.VirtualPathModelProvider;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.AssetAdministrationShell;
-import org.eclipse.basyx.vab.backend.server.basyx.BaSyxTCPServer;
+import org.eclipse.basyx.aas.metamodel.map.AssetAdministrationShell;
+import org.eclipse.basyx.aas.restapi.AASModelProvider;
+import org.eclipse.basyx.aas.restapi.VABMultiSubmodelProvider;
+import org.eclipse.basyx.vab.coder.json.connector.JSONConnector;
+import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnector;
+import org.eclipse.basyx.vab.protocol.basyx.server.BaSyxTCPServer;
 import org.junit.Test;
-
-
 
 /**
  * Code snippet that illustrates the deployment of an AAS to a device, and connects to that AAS
@@ -34,11 +32,11 @@ public class DeviceAASDeploymentVAB {
 		// - Create AAS
 		AssetAdministrationShell aas = new AssetAdministrationShell();
 		// - Set sub model ID
-		aas.setId("urn:de.FHG:devices.es.iese:AAS:1.0:3:x-509#003");
+		aas.setIdShort("urn:de.FHG:devices.es.iese:AAS:1.0:3:x-509#003");
 
 
 		// Export AAS via BaSyx server
-		VirtualPathModelProvider modelProvider = new VirtualPathModelProvider(aas);
+		AASModelProvider modelProvider = new AASModelProvider(aas);
 		VABMultiSubmodelProvider aasProvider = new VABMultiSubmodelProvider(modelProvider);
 		BaSyxTCPServer<VABMultiSubmodelProvider> server = new BaSyxTCPServer<VABMultiSubmodelProvider>(aasProvider, 9998);
 		// - Start local BaSyx/TCP server

@@ -5,14 +5,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.eclipse.basyx.aas.api.resources.IOperation;
-import org.eclipse.basyx.aas.api.resources.ISubModel;
-import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
-import org.eclipse.basyx.aas.backend.connected.aas.ConnectedAssetAdministrationShell;
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.regression.support.processengine.SetupHTTResource;
-import org.eclipse.basyx.testsuite.support.vab.stub.DirectoryServiceStub;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
+import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.metamodel.connected.ConnectedAssetAdministrationShell;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.AASDescriptor;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.SubmodelDescriptor;
+import org.eclipse.basyx.aas.registration.preconfigured.PreconfiguredRegistry;
+import org.eclipse.basyx.regression.support.server.context.ComponentsRegressionContext;
+import org.eclipse.basyx.submodel.metamodel.api.ISubModel;
+import org.eclipse.basyx.submodel.metamodel.api.identifier.IIdentifier;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.operation.IOperation;
+import org.eclipse.basyx.submodel.metamodel.map.identifier.Identifier;
+import org.eclipse.basyx.submodel.metamodel.map.identifier.IdentifierType;
+import org.eclipse.basyx.testsuite.regression.vab.protocol.http.AASHTTPServerResource;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -31,20 +37,27 @@ public class TestDeviceAdministrationShell {
 	 * Makes sure Tomcat Server is started
 	 */
 	@ClassRule
-	public static SetupHTTResource res = new SetupHTTResource();
+	public static AASHTTPServerResource res = new AASHTTPServerResource(new ComponentsRegressionContext());
+
 	@Before
 	public void setupConnection() {
-		
+		PreconfiguredRegistry registry = new PreconfiguredRegistry();
+		ModelUrn coilcarUrn = new ModelUrn("coilcar");
+		IIdentifier id = new Identifier(IdentifierType.Custom, "coilcar");
+		AASDescriptor ccDescriptor = new AASDescriptor(id,
+				"http://localhost:8080/basys.components/Testsuite/Processengine/coilcar/aas");
+		IIdentifier smId = new Identifier(IdentifierType.Custom, "submodel1");
+		SubmodelDescriptor smDescriptor = new SubmodelDescriptor("submodel1Name", smId,
+				"http://localhost:8080/basys.components/Testsuite/Processengine/coilcar/aas/submodels/submodel1");
+		ccDescriptor.addSubmodelDescriptor(smDescriptor);
+		registry.register(ccDescriptor);
 		
 		//set-up the administration shell manager to create connected aas
-		 manager = new ConnectedAssetAdministrationShellManager(new VABConnectionManager(new DirectoryServiceStub()
-				 																							.addMapping("coilcar", "http://localhost:8080/basys.sdk/Testsuite/coilcar/")
-				 																							.addMapping("submodel1", "http://localhost:8080/basys.sdk/Testsuite/coilcar/"),
-				 																		 new HTTPConnectorProvider()));
+		manager = new ConnectedAssetAdministrationShellManager(registry, new HTTPConnectorProvider());
 		
 		// create the connected AAS using the manager
 		try {
-			 connectedAAS = (ConnectedAssetAdministrationShell) manager.retrieveAAS("coilcar");
+			connectedAAS = manager.retrieveAAS(coilcarUrn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

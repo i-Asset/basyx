@@ -5,11 +5,11 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElement;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElementCollection;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
+import org.eclipse.basyx.aas.factory.java.MetaModelElementFactory;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.SubmodelElement;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.ContainerProperty;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
 import org.junit.Test;
 
 
@@ -41,26 +41,31 @@ public class CreateAASSubModelSDK {
 		@SuppressWarnings("unchecked")
 		public SampleSubModel() {
 			// Set sub model ID
-			setId("sm-001");
+			setIdShort("sm-001");
 
 			// Create factory that helps with property creation
-			// - This factory creates sub model properties and ensures presence of all meta data
+			// - This factory creates sub model properties and ensures presence of all meta
+			// data
 			MetaModelElementFactory fac = new MetaModelElementFactory();
 
 			// Add example properties
 			// - Add simple property
-			getProperties().put(fac.create(new Property(), 234, "prop1"));
+			SingleProperty prop1 = new SingleProperty(234);
+			prop1.setIdShort("prop1");
+			addSubModelElement(prop1);
 
+			SingleProperty prop11 = new SingleProperty(123);
+			prop11.setIdShort("prop11");
 			// - Add container property that holds other properties
-			List<SubmodelElement> containerProperties = fac.createList(
-					fac.create(new Property(), 123, "prop11")
-				);
+			List<SubmodelElement> containerProperties = fac.createList(prop11);
 			// - Add container to property map
-			getProperties().put(fac.createContainer(new SubmodelElementCollection(), containerProperties, fac.emptyList(), "prop2"));
+			addSubModelElement(fac.createContainer(new ContainerProperty(), containerProperties, fac.emptyList(), "prop2"));
 
 			// Add another property manually to sub model container "properties"
+			SingleProperty prop3 = new SingleProperty(17);
+			prop3.setIdShort("prop3");
 			{
-				((Map<String, Object>) this.get(PROPERTIES)).put("prop3", fac.create(new Property(), 17, "prop3"));
+				((Map<String, Object>) this.get("dataElements")).put("prop3", prop3);
 			}
 		}
 	}

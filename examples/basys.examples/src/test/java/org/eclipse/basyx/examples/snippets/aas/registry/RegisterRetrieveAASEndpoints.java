@@ -2,22 +2,19 @@ package org.eclipse.basyx.examples.snippets.aas.registry;
 
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.identifier.IdentifierType;
-import org.eclipse.basyx.components.proxy.registry.AASHTTPRegistryProxy;
-import org.eclipse.basyx.components.proxy.registry.AASRegistryProxyIF;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.AASDescriptor;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.SubmodelDescriptor;
+import org.eclipse.basyx.aas.registration.api.IAASRegistryService;
+import org.eclipse.basyx.aas.registration.proxy.AASRegistryProxy;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.tools.aasdescriptor.AASDescriptor;
-import org.eclipse.basyx.tools.aasdescriptor.SubmodelDescriptor;
-import org.eclipse.basyx.tools.modelurn.ModelUrn;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.tools.VABPathTools;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABPathTools;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-
 
 /**
  * Code snippet that registers an AAS descriptor with the AAS registry and accesses the registry using HTTP calls
@@ -38,9 +35,7 @@ public class RegisterRetrieveAASEndpoints {
 	 * The connection manager uses a preconfigured directory for resolving IDs to 
 	 * network addresses, and a HTTP connector to connect to VAB objects.
 	 */
-	protected VABConnectionManager connManager = new VABConnectionManager(
-			new ExamplesPreconfiguredDirectory(),
-			new HTTPConnectorProvider());
+	protected VABConnectionManager connManager = new VABConnectionManager(new ExamplesPreconfiguredDirectory(), new HTTPConnectorProvider());
 
 	
 	/**
@@ -75,17 +70,19 @@ public class RegisterRetrieveAASEndpoints {
 		String        aasSrvURL      = "http://localhost:8080/basys.examples/Components/BaSys/1.0/aasServer";
 		String        aasSrvPrefix   = "/aas/submodels/aasRepository/sampleAAS";
 		// - Create AAS descriptor
-		AASDescriptor aasDescriptor = new AASDescriptor(aasURN.getURN(), IdentifierType.URI, VABPathTools.concatenatePaths(aasSrvURL, aasSrvPrefix, aasURN.getEncodedURN()));
+		AASDescriptor aasDescriptor = new AASDescriptor(aasURN,
+				VABPathTools.concatenatePaths(aasSrvURL, aasSrvPrefix, aasURN.getEncodedURN()));
 		// - Add sub model descriptor URI
-		SubmodelDescriptor submodelDescriptor = new SubmodelDescriptor(subModelURN.getURN(), IdentifierType.URI, VABPathTools.concatenatePaths(aasSrvURL, aasSrvPrefix, subModelURN.getEncodedURN()));
+		SubmodelDescriptor submodelDescriptor = new SubmodelDescriptor(subModelURN.getEncodedURN(), subModelURN, VABPathTools.concatenatePaths(aasSrvURL, aasSrvPrefix, subModelURN.getEncodedURN()));
 		aasDescriptor.addSubmodelDescriptor(submodelDescriptor);
 
 
 		// Register AAS and sub model descriptors in directory (push AAS descriptor to server)
 		// - Connect to AAS registry
-		AASRegistryProxyIF regProxy = new AASHTTPRegistryProxy("http://localhost:8080/basys.examples/Components/Directory/SQL");
+		IAASRegistryService regProxy = new AASRegistryProxy(
+				"http://localhost:8080/basys.examples/Components/Directory/SQL");
 		// - Register AAS descriptor with AAS and sub model endpoints in registry
-		regProxy.register(aasURN, aasDescriptor);
+		regProxy.register(aasDescriptor);
 
 		
 		// Lookup AAS descriptor

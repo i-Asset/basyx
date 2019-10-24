@@ -1,13 +1,17 @@
 package org.eclipse.basyx.regression.cfgprovider.tests;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
+import java.util.Map;
+
 import org.eclipse.basyx.regression.support.directory.ComponentsTestsuiteDirectory;
-import org.eclipse.basyx.regression.support.server.AASHTTPServerResource;
 import org.eclipse.basyx.regression.support.server.context.ComponentsRegressionContext;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.submodel.metamodel.facade.qualifier.AdministrativeInformationFacade;
+import org.eclipse.basyx.submodel.metamodel.map.qualifier.Identifiable;
+import org.eclipse.basyx.testsuite.regression.vab.protocol.http.AASHTTPServerResource;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -31,11 +35,12 @@ public class TestCFGProviderSubmodelMetaData {
 	 * Makes sure Tomcat Server is started
 	 */
 	@ClassRule
-	public static AASHTTPServerResource res = AASHTTPServerResource.getTestResource(new ComponentsRegressionContext());
+	public static AASHTTPServerResource res = new AASHTTPServerResource(new ComponentsRegressionContext());
 	
 	/**
 	 * Test basic queries
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void test() throws Exception {
 
@@ -44,35 +49,17 @@ public class TestCFGProviderSubmodelMetaData {
 
 		
 		// Get property value
-		Object value1 = connSubModel.readElementValue("/aas/submodels/sampleCFG/description");
-		assertTrue(value1.equals("BaSys regression test file for CFG file provider"));
+		Map<String, Object> sampleCFG = (Map<String, Object>) connSubModel
+				.getModelPropertyValue("/aas/submodels/sampleCFG");
+		assertEquals("BaSys regression test file for CFG file provider", sampleCFG.get("description"));
 
 		// Get property value
-		Object value2 = connSubModel.readElementValue("/aas/submodels/sampleCFG/administration/version");
-		assertTrue(value2.equals("1.0"));
-
-		// Update property value
-		connSubModel.updateElementValue("/aas/submodels/sampleCFG/administration/version", "2.0");
-		Object value2a = connSubModel.readElementValue("/aas/submodels/sampleCFG/administration/version");
-		assertTrue(value2a.equals("2.0"));
-
-		// Create property value
-		connSubModel.createElement("/aas/submodels/sampleCFG/administration/version2", "3.0");
-		Object value2b = connSubModel.readElementValue("/aas/submodels/sampleCFG/administration/version2");
-		assertTrue(value2b.equals("3.0"));
-
-		// Delete property value
-		connSubModel.deleteElement("/aas/submodels/sampleCFG/administration/version2");
-		Object value2c = connSubModel.readElementValue("/aas/submodels/sampleCFG/administration/version2");
-		assertTrue(value2c == null);
-
-		// Reset property value
-		connSubModel.updateElementValue("/aas/submodels/sampleCFG/administration/version", "1.0");
-		Object value2d = connSubModel.readElementValue("/aas/submodels/sampleCFG/administration/version");
-		assertTrue(value2d.equals("1.0"));
+		assertEquals("1.0",
+				new AdministrativeInformationFacade((Map<String, Object>) sampleCFG.get(Identifiable.ADMINISTRATION))
+				.getVersion());
 
 		// Get complete sub model
-		Object value3 = connSubModel.readElementValue("/aas/submodels/sampleCFG");
+		Object value3 = connSubModel.getModelPropertyValue("/aas/submodels/sampleCFG");
 		System.out.println(value3.toString());
 	}
 }

@@ -2,10 +2,8 @@ package org.eclipse.basyx.examples.snippets.aas;
 
 import static org.junit.Assert.assertEquals;
 
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.AssetAdministrationShell;
+import org.eclipse.basyx.aas.metamodel.map.AssetAdministrationShell;
 import org.junit.Test;
-
-
 
 /**
  * Code snippet that illustrates the creation of an Asset Administration Shell (AAS) by extending an SDK class
@@ -31,7 +29,7 @@ public class CreateAAS {
 		 */
 		public ExampleAssetAdministrationShell() {
 			// Set Asset Administration Shell ID
-			setId("aas-001");
+			setIdShort("aas-001");
 		}
 	}
 	
@@ -44,7 +42,7 @@ public class CreateAAS {
 		ExampleAssetAdministrationShell aas = new ExampleAssetAdministrationShell();
 		
 		// Retrieve AAS ID value
-		Object propertyId = aas.getId();
+		Object propertyId = aas.getIdShort();
 		
 		
 		// Check result

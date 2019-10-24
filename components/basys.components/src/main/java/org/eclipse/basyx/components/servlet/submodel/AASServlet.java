@@ -1,9 +1,9 @@
 package org.eclipse.basyx.components.servlet.submodel;
 
-import org.eclipse.basyx.aas.backend.provider.VABMultiSubmodelProvider;
-import org.eclipse.basyx.aas.backend.provider.VirtualPathModelProvider;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.AssetAdministrationShell;
-import org.eclipse.basyx.vab.backend.server.http.VABHTTPInterface;
+import org.eclipse.basyx.aas.metamodel.map.AssetAdministrationShell;
+import org.eclipse.basyx.aas.restapi.AASModelProvider;
+import org.eclipse.basyx.aas.restapi.VABMultiSubmodelProvider;
+import org.eclipse.basyx.vab.protocol.http.server.VABHTTPInterface;
 
 /**
  * AAS servlet class that exports a given Asset Administration Shell
@@ -19,13 +19,17 @@ public class AASServlet extends VABHTTPInterface<VABMultiSubmodelProvider> {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Constructor
+	 * Default constructor - based on a VABMultiSubmodelProvider
+	 */
+	public AASServlet() {
+		super(new VABMultiSubmodelProvider());
+	}
+
+	/**
+	 * Constructor for directly creating the AAS in the provider
 	 */
 	public AASServlet(AssetAdministrationShell exportedAAS) {
-		// Invoke base constructor
-		super(new VABMultiSubmodelProvider());
-
-		// Add provides sub model
-		getModelProvider().setAssetAdministrationShell(new VirtualPathModelProvider(exportedAAS));
+		this();
+		getModelProvider().setAssetAdministrationShell(new AASModelProvider(exportedAAS));
 	}
 }

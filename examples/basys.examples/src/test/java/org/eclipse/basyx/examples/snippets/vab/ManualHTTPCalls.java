@@ -5,18 +5,16 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.components.servlet.submodel.EmptyVABLambdaElementServlet;
+import org.eclipse.basyx.components.servlet.submodel.VABLambdaServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
 import org.eclipse.basyx.tools.webserviceclient.WebServiceJSONClient;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-
 
 /**
  * Code snippet that illustrates the use of VABvia HTTP REST calls
@@ -59,7 +57,7 @@ public class ManualHTTPCalls {
 				// - BaSys topology with one AAS Server and one SQL directory
 				new BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory().
 					// Deploy example specific servlets to Tomcat server in this context
-					addServletMapping("/Testsuite/components/BaSys/1.0/devicestatusVAB/*", new EmptyVABLambdaElementServlet())
+					addServletMapping("/Testsuite/components/BaSys/1.0/devicestatusVAB/*", new VABLambdaServlet())
 			);
 
 	
@@ -83,9 +81,9 @@ public class ManualHTTPCalls {
 		//   properties "prop1" and "prop2". Container and properties lack the 
 		//   required properties for AAS and AAS sub models. They are therefore
 		//   not compliant to Asset Administration Shells.
-		connSubModel1.createElement("properties", new HashMap<String, Object>());
-		connSubModel1.createElement("properties/prop1", 7);
-		connSubModel1.createElement("properties/prop2", "myStr");
+		connSubModel1.createValue("properties", new HashMap<String, Object>());
+		connSubModel1.createValue("properties/prop1", 7);
+		connSubModel1.createValue("properties/prop2", "myStr");
 		
 		
 		// Web service client 

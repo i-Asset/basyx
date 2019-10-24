@@ -1,15 +1,16 @@
 package org.eclipse.basyx.examples.snippets.undoc.aas.code;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-import org.eclipse.basyx.aas.backend.connector.JSONConnector;
-import org.eclipse.basyx.aas.backend.connector.basyx.BaSyxConnector;
-import org.eclipse.basyx.aas.backend.provider.VirtualPathModelProvider;
-import org.eclipse.basyx.aas.metamodel.hashmap.VABModelMap;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.vab.backend.server.basyx.BaSyxTCPServer;
+import java.util.Map;
+
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.submodel.restapi.SubModelProvider;
+import org.eclipse.basyx.vab.coder.json.connector.JSONConnector;
+import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnector;
+import org.eclipse.basyx.vab.protocol.basyx.server.BaSyxTCPServer;
 import org.junit.Test;
-
 
 /**
  * Illustrate manual creation and providing of AAS sub model
@@ -23,21 +24,26 @@ public class BaSyxCreateProvideUseExampleAASSubmodel {
 	/**
 	 * Create, export, and access an example AAS sub model
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createExportAndAccessSubModel() throws Exception {
 				
 		// Create sub model and add properties
-		VABModelMap<Object> statusSM = new SubModel()
+		SubModel statusSM = new SubModel();
 		//   - Property status: indicate device status
-				.putPath("properties/status", "offline")
+		SingleProperty statusProp = new SingleProperty("offline");
+		statusProp.setIdShort("status");
+		statusSM.addSubModelElement(statusProp);
 		//   - Property statistics: export invocation statistics for every service
 		//     - invocations: indicate total service invocations. Properties are not persisted in this example,
 		//                    therefore we start counting always at 0.
-				.putPath("properties/statistics/default/invocations", 0);
+		SingleProperty invocationsProp = new SingleProperty(0);
+		invocationsProp.setIdShort("invocations");
+		statusSM.addSubModelElement(invocationsProp);
 
 		
 		// Provide sub model via BaSyx server
-		BaSyxTCPServer<VirtualPathModelProvider> server = new BaSyxTCPServer<>(new VirtualPathModelProvider(statusSM), 9998);
+		BaSyxTCPServer<SubModelProvider> server = new BaSyxTCPServer<>(new SubModelProvider(statusSM), 9998);
 		// - Start local BaSyx/TCP server
 		server.start();
 
@@ -48,7 +54,8 @@ public class BaSyxCreateProvideUseExampleAASSubmodel {
 		// - Create connection to device manager
 		JSONConnector toDeviceManager = new JSONConnector(basyxConnector);	
 		// - Access sub model property, check value
-		assertTrue(toDeviceManager.getModelPropertyValue("properties/status").equals("offline"));
+		Map<String, Object> property = (Map<String, Object>) toDeviceManager.getModelPropertyValue(SubModel.PROPERTIES + "/status");
+		assertEquals("offline", property.get("value"));
 		
 		
 		// Stop local BaSyx/TCP server

@@ -1,6 +1,6 @@
 package org.eclipse.basyx.regression.support.directory;
 
-import org.eclipse.basyx.testsuite.support.backend.common.stubs.java.directory.TestsuiteDirectory;
+import org.eclipse.basyx.vab.directory.preconfigured.PreconfiguredDirectory;
 
 
 
@@ -11,7 +11,7 @@ import org.eclipse.basyx.testsuite.support.backend.common.stubs.java.directory.T
  * @author kuhn
  *
  */
-public class ComponentsTestsuiteDirectory extends TestsuiteDirectory {
+public class ComponentsTestsuiteDirectory extends PreconfiguredDirectory {
 
 	
 	/**
@@ -34,5 +34,8 @@ public class ComponentsTestsuiteDirectory extends TestsuiteDirectory {
 		addMapping("sampleRawCFG.RawCfgFileTestAAS", "http://localhost:8080/basys.components/Testsuite/components/BaSys/1.0/provider/rawcfgsm/");
 		// - XQuery provider mappings
 		addMapping("XMLXQueryFileTestAAS",     "http://localhost:8080/basys.components/Testsuite/components/BaSys/1.0/provider/xmlxquery/");
+		// - Processengine mappings
+		addMapping("coilcar",                  "http://localhost:8080/basys.components/Testsuite/Processengine/coilcar/");
+		addMapping("submodel1",                "http://localhost:8080/basys.components/Testsuite/Processengine/coilcar/");
 	}	
 }

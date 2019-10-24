@@ -3,14 +3,16 @@ package org.eclipse.basyx.components.processengine.connector;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.basyx.aas.api.resources.IOperation;
-import org.eclipse.basyx.aas.api.resources.IProperty;
-import org.eclipse.basyx.aas.api.resources.ISingleProperty;
-import org.eclipse.basyx.aas.api.resources.ISubModel;
-import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
-import org.eclipse.basyx.aas.backend.connected.aas.ConnectedSubModel;
-import org.eclipse.basyx.components.service.BaseBaSyxService;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
+import org.eclipse.basyx.aas.manager.api.IAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
+import org.eclipse.basyx.submodel.metamodel.api.ISubModel;
+import org.eclipse.basyx.submodel.metamodel.api.identifier.IIdentifier;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.IDataElement;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.operation.IOperation;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.property.ISingleProperty;
+import org.eclipse.basyx.submodel.metamodel.connected.ConnectedSubModel;
+import org.eclipse.basyx.submodel.metamodel.map.identifier.Identifier;
+import org.eclipse.basyx.submodel.metamodel.map.identifier.IdentifierType;
 
 
 /**
@@ -20,28 +22,29 @@ import org.eclipse.basyx.vab.core.VABConnectionManager;
  * 
  * @author Zhang, Zai
  * */
-public abstract class DeviceServiceExecutor extends BaseBaSyxService implements IDeviceServiceExecutor {
+public abstract class DeviceServiceExecutor implements IDeviceServiceExecutor {
 	
-	protected  ConnectedAssetAdministrationShellManager manager;
+	protected IAssetAdministrationShellManager manager;
 	
 	
-	/**
-	 * private constructor
-	 * create the connected administration shell for data exchange
-	 * */
-	public DeviceServiceExecutor(VABConnectionManager connectionmanager) {
-		setConnectionManager(connectionmanager);
-		//set-up the administration shell manager to create connected aas
-		manager = new ConnectedAssetAdministrationShellManager(connectionmanager);
+	public DeviceServiceExecutor(IAssetAdministrationShellManager manager) {
+		// set-up the administration shell manager to create connected aas
+		this.manager = manager;
 	};
-	
+
 	/**
 	 * Synchronous invocation the expected service specified by the BPMN-model
 	 * */
+	@Override
 	public Object executeService( String servicename, String serviceProvider, String submodelid, List<Object> params) {
 		try {
+			// create ids
+			IIdentifier aasId = new Identifier(IdentifierType.Custom, serviceProvider);
+			IIdentifier smId = new Identifier(IdentifierType.Custom, submodelid);
+
 			// create the submodel of the corresponding aas
-			ISubModel serviceSubmodel = manager.retrieveSM(submodelid);
+			ISubModel serviceSubmodel = manager.retrieveSubModel(aasId, smId);
+
 			// navigate to the expected service 
 			Map<String, IOperation> operations = serviceSubmodel.getOperations();
 			IOperation op = operations.get(servicename);
@@ -62,12 +65,16 @@ public abstract class DeviceServiceExecutor extends BaseBaSyxService implements 
 	/**
 	 * Get value of a property from a submodel
 	 * */
-	protected Object getProperty(String submodelid, String propertyName) throws Exception {
+	protected Object getProperty(String rawUrn, String submodelid, String propertyName) throws Exception {
+		// create Model urn
+		IIdentifier aasUrn = new ModelUrn(rawUrn);
+		IIdentifier smId = new Identifier(IdentifierType.Custom, submodelid);
+
 		// retrieve submodel with id
-		ISubModel statusSubmodel = manager.retrieveSM(submodelid);
+		ISubModel statusSubmodel = manager.retrieveSubModel(aasUrn, smId);
 		
 		// get properties of the submodel
-		Map<String, IProperty> properties = ((ConnectedSubModel) statusSubmodel).getProperties();
+		Map<String, IDataElement> properties = ((ConnectedSubModel) statusSubmodel).getDataElements();
 		
 		// get specific property
 		ISingleProperty pro_EXST = (ISingleProperty)properties.get(propertyName);
@@ -114,7 +121,5 @@ public abstract class DeviceServiceExecutor extends BaseBaSyxService implements 
 	 * */
 	@Override
 	public abstract Object executeService(String serviceName, String deviceid, List<Object> params) throws Exception ;
-	
-
 	
 }

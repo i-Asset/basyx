@@ -2,23 +2,20 @@ package org.eclipse.basyx.examples.snippets.aas.submodels;
 
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.basyx.aas.api.resources.ISingleProperty;
-import org.eclipse.basyx.aas.api.resources.ISubModel;
-import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
-import org.eclipse.basyx.components.servlet.submodel.DynamicModelProviderServlet;
+import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.metamodel.map.AssetAdministrationShell;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
+import org.eclipse.basyx.components.servlet.submodel.AASServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
-import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.examples.support.directory.ExampleAASRegistry;
+import org.eclipse.basyx.submodel.metamodel.api.ISubModel;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.property.ISingleProperty;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-
 
 /**
  * Code snippet that illustrates the creation of an AAS sub model
@@ -28,21 +25,18 @@ import org.junit.Test;
  */
 public class DynamicSubModelDeployment {
 
+	private static final String AAS = "de.FHG:devices.es.iese:aas:1.0:3:x-509#003";
 	private static final String STATUS_SM = "de.FHG:devices.es.iese:statusSM:1.0:3:x-509#003";
-	
-	/**
-	 * Create VAB connection manager backend
-	 * 
-	 * The connection manager uses a preconfigured directory for resolving IDs to 
-	 * network addresses, and a HTTP connector to connect to VAB objects.
-	 */
-	protected VABConnectionManager connManager = new VABConnectionManager(
-			new ExamplesPreconfiguredDirectory()
-				// Add example specific mappings
-					.addMapping(STATUS_SM, "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/dynamicModelRepository"),
+
+	protected ConnectedAssetAdministrationShellManager aasManager = new ConnectedAssetAdministrationShellManager(
+			new ExampleAASRegistry()
+					.addAASMapping(AAS,
+							"http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/dynamicModelRepository/aas/")
+					// Ass Example specific mappings
+					.addSubmodelMapping(AAS, STATUS_SM,
+							"http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/dynamicModelRepository/aas/submodels/Status"),
 			new HTTPConnectorProvider());
 
-	
 	/**
 	 * The BaSyx Deployment instantiates and starts context elements for this example. 
 	 * 
@@ -58,7 +52,8 @@ public class DynamicSubModelDeployment {
 				// - BaSys topology with one AAS Server and one SQL directory
 				new BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory().
 					// Deploy example specific servlets to Apache Tomcat server in this context
-					addServletMapping("/Testsuite/components/BaSys/1.0/dynamicModelRepository/*", new DynamicModelProviderServlet())
+					addServletMapping("/Testsuite/components/BaSys/1.0/dynamicModelRepository/*",
+							new AASServlet(new AssetAdministrationShell()))
 			);
 
 	
@@ -70,46 +65,44 @@ public class DynamicSubModelDeployment {
 	 */
 	@Test
 	public void snippet() throws Exception {
-
-		// Server connections
-		// - Connect to sub model. Connecting to a sub model by its ID is discouraged, because a sub 
-		//   model ID is not necessarily unique outside the scope of its AAS. If users want to connect
-		//   directly to sub models, the registry needs to support this, and unique identifies (as here)
-		//   must be used. For portability, users should connect to sub models instead via an AAS ID and 
-		//   sub model ID tuple, as illustrated in the registry examples. 
-		VABElementProxy connSubModel1 = this.connManager.connectToVABElement(STATUS_SM);
-
-		// Create factory that helps with property creation
-		// - This factory creates sub model properties and ensures presence of all meta data
-		MetaModelElementFactory fac = new MetaModelElementFactory();
-
 		// Instantiate sub model
 		SubModel submodel = new SubModel();
 		// - Add example properties to sub model
-		submodel.setId(STATUS_SM);
-		submodel.getProperties().put(fac.create(new Property(),       7, "prop1"));
-		submodel.getProperties().put(fac.create(new Property(), "myStr", "prop2"));
+		submodel.setIdShort("Status");
+		SingleProperty prop1 = new SingleProperty(7);
+		prop1.setIdShort("prop1");
+		submodel.addSubModelElement(prop1);
 
+		SingleProperty prop2 = new SingleProperty("myStr");
+		prop2.setIdShort("prop2");
+		submodel.addSubModelElement(prop2);
+
+		
+		
 		// Transfer sub model to server
-		connSubModel1.createElement("aas/submodels/" + STATUS_SM, submodel);
+		aasManager.createSubModel(new ModelUrn(AAS), submodel);
 
 		
 		// Retrieve sub model with SDK connector
 		{
-			// Create and connect SDK connector
-			ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(connManager);
-			// - Retrieve sub model
-			ISubModel subModel = manager.retrieveSM(STATUS_SM);
+
+			// Server connections
+			// - Connect to sub model. Connecting to a sub model by its ID is discouraged, because a sub 
+			//   model ID is not necessarily unique outside the scope of its AAS. If users want to connect
+			//   directly to sub models, the registry needs to support this, and unique identifies (as here)
+			//   must be used. For portability, users should connect to sub models instead via an AAS ID and 
+			//   sub model ID tuple, as illustrated in the registry examples. 
+			ISubModel subModel = aasManager.retrieveSubModel(new ModelUrn(AAS), new ModelUrn(STATUS_SM));
 
 			// Read sub model properties
-			String smId     = subModel.getId();
-			String prop1Id  = subModel.getProperties().get("prop1").getId();
-			int    prop1Val = (int) ((ISingleProperty) subModel.getProperties().get("prop1")).get();
-			String prop2Id  = subModel.getProperties().get("prop2").getId();
-			String prop2Val = (String) ((ISingleProperty) subModel.getProperties().get("prop2")).get();
+			String smId     = subModel.getIdShort();
+			String prop1Id  = subModel.getDataElements().get("prop1").getIdShort();
+			int    prop1Val = (int) ((ISingleProperty) subModel.getDataElements().get("prop1")).get();
+			String prop2Id  = subModel.getDataElements().get("prop2").getIdShort();
+			String prop2Val = (String) ((ISingleProperty) subModel.getDataElements().get("prop2")).get();
 			
 			// Compare sub model property values
-			assertTrue(smId.equals(STATUS_SM));
+			assertTrue(smId.equals("Status"));
 			assertTrue(prop1Id.equals("prop1"));
 			assertTrue(prop1Val == 7);
 			assertTrue(prop2Id.equals("prop2"));

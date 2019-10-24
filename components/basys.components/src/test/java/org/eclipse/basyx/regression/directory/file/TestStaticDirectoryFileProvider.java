@@ -7,10 +7,10 @@ import static org.junit.Assert.fail;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.eclipse.basyx.aas.backend.connector.MetaprotocolHandler;
-import org.eclipse.basyx.regression.support.server.AASHTTPServerResource;
 import org.eclipse.basyx.regression.support.server.context.ComponentsRegressionContext;
+import org.eclipse.basyx.testsuite.regression.vab.protocol.http.AASHTTPServerResource;
 import org.eclipse.basyx.tools.webserviceclient.WebServiceRawClient;
+import org.eclipse.basyx.vab.coder.json.metaprotocol.MetaprotocolHandler;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ public class TestStaticDirectoryFileProvider {
 	 * Makes sure Tomcat Server is started
 	 */
 	@ClassRule
-	public static AASHTTPServerResource res = AASHTTPServerResource.getTestResource(new ComponentsRegressionContext());
+	public static AASHTTPServerResource res = new AASHTTPServerResource(new ComponentsRegressionContext());
 	private MetaprotocolHandler handler = new MetaprotocolHandler();
 
 	/**
@@ -132,7 +132,7 @@ public class TestStaticDirectoryFileProvider {
 
 	private String getResult(String res) {
 		try {
-			return (String) handler.verify(res);
+			return (String) handler.deserialize(res);
 		} catch (Exception e) {
 			throw new RuntimeException();
 		}

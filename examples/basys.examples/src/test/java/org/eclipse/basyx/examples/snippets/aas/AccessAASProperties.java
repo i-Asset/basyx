@@ -2,10 +2,8 @@ package org.eclipse.basyx.examples.snippets.aas;
 
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.AssetAdministrationShell;
+import org.eclipse.basyx.aas.metamodel.map.AssetAdministrationShell;
 import org.junit.Test;
-
-
 
 /**
  * This code snippet illustrates the creation of an Asset Administration Shell (AAS) data structure 
@@ -35,7 +33,7 @@ public class AccessAASProperties {
 		// - Access AAS property via the specific access operation. This is the preferred
 		//   approach for accessing Asset Administration Shell and sub model properties,
 		//   as well as meta data.
-		Object deviceIDValue = aas.getId();
+		Object deviceIDValue = aas.getIdShort();
 		
 		
 		// Compared received value to expected value

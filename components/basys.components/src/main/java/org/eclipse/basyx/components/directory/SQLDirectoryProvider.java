@@ -13,11 +13,12 @@ import java.util.Properties;
 
 import javax.servlet.ServletException;
 
-import org.eclipse.basyx.aas.backend.http.tools.GSONTools;
-import org.eclipse.basyx.aas.backend.http.tools.factory.DefaultTypeFactory;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.AASDescriptor;
 import org.eclipse.basyx.components.sqlprovider.driver.SQLDriver;
-import org.eclipse.basyx.tools.aasdescriptor.AASDescriptor;
-import org.eclipse.basyx.vab.core.IModelProvider;
+import org.eclipse.basyx.vab.coder.json.serialization.DefaultTypeFactory;
+import org.eclipse.basyx.vab.coder.json.serialization.GSONTools;
+import org.eclipse.basyx.vab.modelprovider.VABPathTools;
+import org.eclipse.basyx.vab.modelprovider.api.IModelProvider;
 
 /**
  * Model Provider handling SQL Directory Services.
@@ -27,7 +28,7 @@ import org.eclipse.basyx.vab.core.IModelProvider;
  */
 public class SQLDirectoryProvider implements IModelProvider {
 
-	private static String registryPath = "/api/v1/registry";
+	private static String registryPath = "api/v1/registry";
 
 
 	/**
@@ -213,7 +214,8 @@ public class SQLDirectoryProvider implements IModelProvider {
 	 */
 	@Override
 	public Object getModelPropertyValue(String path) throws Exception {
-
+		path = VABPathTools.stripSlashes(path);
+		
 		// Process get request
 		// - Get all (local) AAS
 		if (path.equals(registryPath)) {
@@ -241,11 +243,15 @@ public class SQLDirectoryProvider implements IModelProvider {
 
 		// Get a specific AAS
 		else if (path.startsWith(registryPath + "/")) {
-			System.out.println("Getting:" + path.substring(new String(registryPath + "/").length()));
+			String id = path.substring(new String(registryPath + "/").length());
+			id = stripLeadingSlashes(id);
+			
+			
+			System.out.println("Getting:" + id);
 
 			// Run query
 			ResultSet resultSet = sqlDriver.sqlQuery("SELECT * FROM directory.directory WHERE \"ElementID\" = '"
-					+ path.substring(new String(registryPath + "/").length()) + "'");
+					+ id + "'");
 
 			// Write result
 			StringBuilder result = new StringBuilder();
@@ -284,6 +290,7 @@ public class SQLDirectoryProvider implements IModelProvider {
 
 		// Extract AAS ID
 		String aasID = path.substring(new String(registryPath + "/").length());
+		aasID = stripLeadingSlashes(aasID);
 
 		// Update AAS registry
 		sqlDriver.sqlUpdate("UPDATE directory.directory SET \"ElementRef\" = '"+aasValue.toString()+"' WHERE \"ElementID\"='"+aasID+"';");
@@ -303,7 +310,7 @@ public class SQLDirectoryProvider implements IModelProvider {
 			AASDescriptor aasDescriptor = new AASDescriptor((Map<String, Object>) values);
 
 			// Extract AAS ID
-			String aasID = aasDescriptor.getId();
+			String aasID = aasDescriptor.getIdentifier().getId();
 	
 			// Update AAS registry
 			sqlDriver.sqlUpdate("INSERT INTO directory.directory (\"ElementRef\", \"ElementID\") VALUES ('"
@@ -324,6 +331,8 @@ public class SQLDirectoryProvider implements IModelProvider {
 
 		// Extract AAS ID
 		String aasID = path.substring(new String(registryPath + "/").length());
+		aasID = stripLeadingSlashes(aasID);
+
 
 		// Delete element
 		// - Delete element from table "directory"
@@ -344,8 +353,16 @@ public class SQLDirectoryProvider implements IModelProvider {
 	 * Registry does not support invoke
 	 */
 	@Override
-	public Object invokeOperation(String path, Object[] parameter) throws Exception {
+	public Object invokeOperation(String path, Object... parameter) throws Exception {
 		throw new RuntimeException("Not implemented");
+	}
+
+	private String stripLeadingSlashes(String str) {
+		// Strip leading slashes
+		while (str.startsWith("/")) {
+			str = str.substring(1);
+		}
+		return str;
 	}
 
 }

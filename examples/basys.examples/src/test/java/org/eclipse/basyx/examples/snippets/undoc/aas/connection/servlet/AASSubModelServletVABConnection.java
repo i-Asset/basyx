@@ -5,18 +5,18 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElement;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElementCollection;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
+import org.eclipse.basyx.aas.factory.java.MetaModelElementFactory;
 import org.eclipse.basyx.components.servlet.submodel.SubmodelServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_Empty;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.SubmodelElement;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.ContainerProperty;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -47,7 +47,7 @@ public class AASSubModelServletVABConnection {
 		@SuppressWarnings("unchecked")
 		public SampleSubModel() {
 			// Set sub model ID
-			setId("sm-001");
+			setIdShort("sm-001");
 
 			// Create factory that helps with property creation
 			// - This factory creates sub model properties and ensures presence of all meta data
@@ -55,18 +55,24 @@ public class AASSubModelServletVABConnection {
 
 			// Add example properties
 			// - Add simple property
-			getProperties().put(fac.create(new Property(), 234, "prop1"));
+			SingleProperty prop1 = new SingleProperty(234);
+			prop1.setIdShort("prop1");
+			addSubModelElement(prop1);
 
+			SingleProperty prop11 = new SingleProperty(123);
+			prop11.setIdShort("prop11");
 			// - Add container property that holds other properties
 			List<SubmodelElement> containerProperties = fac.createList(
-					fac.create(new Property(), 123, "prop11")
+					prop11
 				);
 			// - Add container to property map
-			getProperties().put(fac.createContainer(new SubmodelElementCollection(), containerProperties, fac.emptyList(), "prop2"));
+			addSubModelElement(fac.createContainer(new ContainerProperty(), containerProperties, fac.emptyList(), "prop2"));
 
 			// Add another property manually to sub model container "properties"
+			SingleProperty prop3 = new SingleProperty(17);
+			prop3.setIdShort("prop3");
 			{
-				((Map<String, Object>) this.get(PROPERTIES)).put("prop3", fac.create(new Property(), 17, "prop3"));
+				((Map<String, Object>) this.get("dataElements")).put("prop3", prop3);
 			}
 		}
 	}
@@ -79,11 +85,10 @@ public class AASSubModelServletVABConnection {
 	protected VABConnectionManager connManager = new VABConnectionManager(
 			// Add example specific mappings
 			new ExamplesPreconfiguredDirectory()
-			    // - SDK connectors encapsulate relative path to sub model (/aas/submodels/sm-001)
+					// Entries map directly at the SubmodelServlet
 				.addMapping("aas-001",    "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel")
 			    .addMapping("sm-001",     "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel")
-			    // - VAB needs to know the relative path of the sub model that is defined by AAS meta model
-			    .addMapping("sm-001VAB",  "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/aas/submodels/sm-001"),
+			    .addMapping("sm-001VAB",  "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel"),
 			// We connect via HTTP
 			new HTTPConnectorProvider());
 
@@ -110,15 +115,15 @@ public class AASSubModelServletVABConnection {
 		// Connect to sub model using lower-level VAB interface
 		VABElementProxy connSubModel1 = this.connManager.connectToVABElement("sm-001VAB");
 		// - Read property values and compare with expected values
-		assertTrue((int) connSubModel1.readElementValue("dataElements/prop1/value") == 234);
-		assertTrue((int) connSubModel1.readElementValue("dataElements/prop3/value") == 17);
-		assertTrue(((Map<String, Object>) connSubModel1.readElementValue("dataElements/prop1")).get("idShort").equals("prop1"));
-		assertTrue(((Map<String, Object>) connSubModel1.readElementValue("dataElements/prop2")).get("idShort").equals("prop2"));
-		assertTrue((int) connSubModel1.readElementValue("dataElements/prop2/dataElements/prop11/value") == 123);
+		assertTrue((int) ((Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop1")).get("value") == 234);
+		assertTrue((int) ((Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop3")).get("value") == 17);
+		assertTrue(((Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop1")).get("idShort").equals("prop1"));
+		assertTrue(((Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop2")).get("idShort").equals("prop2"));
+		assertTrue((int) ((Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop2/dataElements/prop11/value")).get("value") == 123);
 		// - Change property value using VAB primitive
-		connSubModel1.updateElementValue("dataElements/prop1/value", 456);
+		connSubModel1.setModelPropertyValue("dataElements/prop1/value", 456);
 		// - Read value back using VAB primitive
-		assertTrue((int) connSubModel1.readElementValue("dataElements/prop1/value") == 456);
+		assertTrue((int) ((Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop1/value")).get("value") == 456);
 	}
 }
 

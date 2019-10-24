@@ -6,9 +6,10 @@ import java.util.Properties;
 
 import javax.servlet.ServletException;
 
-import org.eclipse.basyx.aas.backend.provider.VABMultiSubmodelProvider;
+import org.eclipse.basyx.aas.restapi.VABMultiSubmodelProvider;
+import org.eclipse.basyx.components.provider.BaseConfiguredProvider;
 import org.eclipse.basyx.components.xmlxqueryprovider.XMLXQuerySubModelProvider;
-import org.eclipse.basyx.vab.backend.server.http.VABHTTPInterface;
+import org.eclipse.basyx.vab.protocol.http.server.VABHTTPInterface;
 
 /**
  * Servlet interface for XML XQuery sub model provider
@@ -75,7 +76,7 @@ public class XMLXQueryServlet extends VABHTTPInterface<VABMultiSubmodelProvider>
 			cfgProperties.load(input);
 
 			// Extract sub model provider properties
-			this.submodelID = cfgProperties.getProperty("basyx.submodelID");
+			this.submodelID = cfgProperties.getProperty(BaseConfiguredProvider.buildBasyxCfgName(BaseConfiguredProvider.SUBMODELID));
 
 		} catch (IOException e) {
 			// Output exception

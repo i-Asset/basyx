@@ -1,13 +1,13 @@
 package org.eclipse.basyx.components.configuration.builder;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
+import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.registration.api.IAASRegistryService;
+import org.eclipse.basyx.aas.registration.proxy.AASRegistryProxy;
 import org.eclipse.basyx.components.configuration.CFGBaSyxProtocolType;
 import org.eclipse.basyx.components.configuration.ConfigurableComponent;
-import org.eclipse.basyx.components.proxy.registry.AASHTTPRegistryProxy;
-import org.eclipse.basyx.components.proxy.registry.AASRegistryProxyIF;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-
-
+import org.eclipse.basyx.vab.directory.api.IVABDirectoryService;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 
 /**
  * Configuration builder for BaSyx services
@@ -29,7 +29,7 @@ public class BaSyxServiceConfigurationBuilder<T extends BaSyxServiceConfiguratio
 	 */
 	protected CFGBaSyxProtocolType protocoltype = null;
 	
-	
+	protected IVABDirectoryService vabDirectory = null;
 	
 	
 	/**
@@ -58,9 +58,9 @@ public class BaSyxServiceConfigurationBuilder<T extends BaSyxServiceConfiguratio
 	/**
 	 * Create registry instance based on configuration
 	 */
-	public AASRegistryProxyIF getRegistry() {
+	public IAASRegistryService getRegistry() {
 		// Create and return registry
-		return new AASHTTPRegistryProxy(registryURL);
+		return new AASRegistryProxy(registryURL);
 	}
 	
 
@@ -78,11 +78,31 @@ public class BaSyxServiceConfigurationBuilder<T extends BaSyxServiceConfiguratio
 	}
 
 	/**
+	 * Set VAB Directory
+	 */
+	@SuppressWarnings("unchecked")
+	public T directoryService(IVABDirectoryService vabDirectory) {
+		// Store VAB directory
+		this.vabDirectory = vabDirectory;
+
+		// Return 'this' Refence
+		return (T) this;
+	}
+
+	/**
 	 * Create connection manager based on configuration
 	 */
 	public VABConnectionManager getConnectionManager() {
 		// Create and return VABConnectionManager
-		return new VABConnectionManager(getRegistry(), new HTTPConnectorProvider());
+		return new VABConnectionManager(vabDirectory, new HTTPConnectorProvider());
+	}
+
+	/**
+	 * Create connected AAS-manager based on configuration
+	 */
+	public ConnectedAssetAdministrationShellManager getConnetedAASManager() {
+		// Create and return connected AAS-manager
+		return new ConnectedAssetAdministrationShellManager(getRegistry(), new HTTPConnectorProvider());
 	}
 }
 

@@ -1,15 +1,18 @@
 package org.eclipse.basyx.examples.mockup.application;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.hashmap.VABModelMap;
-import org.eclipse.basyx.components.proxy.registry.AASHTTPRegistryProxy;
+import java.util.Map;
+
+import org.eclipse.basyx.aas.metamodel.map.descriptor.AASDescriptor;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.SubmodelDescriptor;
+import org.eclipse.basyx.aas.registration.proxy.AASRegistryProxy;
 import org.eclipse.basyx.components.service.BaseBaSyxService;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.tools.aasdescriptor.AASDescriptor;
-import org.eclipse.basyx.tools.aasdescriptor.SubmodelDescriptor;
-import org.eclipse.basyx.tools.modelurn.ModelUrn;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
+
 
 
 
@@ -35,7 +38,7 @@ public class ReceiveDeviceMaintenanceApplication extends BaseBaSyxService {
 	 */
 	public ReceiveDeviceMaintenanceApplication() {
 		// Create AAS registry for this service
-		setRegistry(new AASHTTPRegistryProxy("http://localhost:8080/basys.examples/Components/Directory/SQL"));
+		setRegistry(new AASRegistryProxy("http://localhost:8080/basys.examples/Components/Directory/SQL"));
 		
 		// Service connection manager
 		setConnectionManager(new VABConnectionManager(new ExamplesPreconfiguredDirectory(), new HTTPConnectorProvider()));
@@ -59,7 +62,7 @@ public class ReceiveDeviceMaintenanceApplication extends BaseBaSyxService {
 		AASDescriptor      aasDescriptor = getRegistry().lookupAAS(lookupURN("AAS"));
 		SubmodelDescriptor smDescriptor  = aasDescriptor.getSubModelDescriptor(lookupURN("Supply"));
 		// - Connect to status sub model end point
-		aasServerConnection = getConnectionManager().connectToVABElementByURL(smDescriptor.getFirstEndpoint());		
+		aasServerConnection = getConnectionManager().connectToVABElementByPath(smDescriptor.getFirstEndpoint());		
 	}
 	
 
@@ -68,11 +71,10 @@ public class ReceiveDeviceMaintenanceApplication extends BaseBaSyxService {
 	 */
 	@SuppressWarnings("unchecked")
 	public int getDevicePartSupplyStatus() {
-		// Read complete sub model ("/")
-		VABModelMap<Object> deviceSM = (VABModelMap<Object>) aasServerConnection.readElementValue("/");
-		
-		// Return status property
-		return Integer.parseInt(deviceSM.getPath("properties/parts/availability").toString());
+		// Read the status property
+		Map<String, Object> property = (Map<String, Object>) aasServerConnection.getModelPropertyValue(SubModel.PROPERTIES + "/partAvailability");
+		// Return the value of the property
+		return Integer.parseInt(property.get("value").toString());
 	}
 }
 

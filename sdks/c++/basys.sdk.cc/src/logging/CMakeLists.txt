@@ -1,18 +1,20 @@
 ###############################################
-###              Logging                    ###
+###              BaSyx::Logging             ###
 ###############################################
 
-project(logging)
+project(basyx)
 
-add_library(logging)
+add_library(basyx_log)
 
-target_sources(logging
+target_sources(basyx_log
     PRIVATE
 		log/log.cpp
 		log/log.h
 )
 
-target_include_directories(logging PUBLIC ${PROJECT_SOURCE_DIR}) 
-target_link_libraries(logging abstraction util)
+target_include_directories(basyx_log PUBLIC ${PROJECT_SOURCE_DIR}) 
+target_link_libraries(basyx_log basyx::abstraction basyx::util fmt)
+add_library(basyx::log ALIAS basyx_log)
 
-diagnostics_print(logging)
+
+diagnostics_print(basyx_log)

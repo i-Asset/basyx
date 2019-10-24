@@ -3,7 +3,7 @@
 ###############################################
 
 cmake_minimum_required(VERSION 3.13.0)
-project(BASYX)
+project("BaSyx C++ SDK")
 
 set(BASYX_MAJOR_REV "0")
 set(BASYX_MINOR_REV "1")
@@ -44,6 +44,8 @@ set(BASYX_BUILD_API ON CACHE BOOL "Build BaSyx API")
 set(BASYX_UTILITY_PROJECTS ON CACHE BOOL "Create utility targets")
 set(BASYX_DEBUG_PRINT_FRAMES OFF CACHE BOOL "Print BaSyx frames")
 
+option(BASYX_BUILD_LIBFMT "Wether to build external, yet included library libfmt" ON)
+
 ### Compiler settings ###
 
 set(CMAKE_CXX_STANDARD 11)
@@ -53,6 +55,7 @@ set(CMAKE_CXX_STANDARD 11)
 add_compile_definitions(BASYX_MAJOR_REV=${BASYX_MAJOR_REV})
 add_compile_definitions(BASYX_MINOR_REV=${BASYX_MINOR_REV})
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
+##add_compile_definitions(__USE_MINGW_ANSI_STDIO=0)
 
 ###############################################
 ###           Library Settings              ###
@@ -62,24 +65,34 @@ add_compile_definitions(WIN32_LEAN_AND_MEAN)
 find_package(Threads)
 
 ###############################################
-###           Source Directory              ###
-###############################################
-
-add_subdirectory(src/abstraction)
-add_subdirectory(src/backends)
-add_subdirectory(src/basyx)
-add_subdirectory(src/logging)
-add_subdirectory(src/utility)
-
-###############################################
 ###           Library Directory             ###
 ###############################################
 
-add_subdirectory(lib/json)
-if(${BASYX_BUILD_TESTS})
-	add_subdirectory(lib/gtest)
-	include(GoogleTest)
+if(${BASYX_BUILD_LIBFMT})
+   add_subdirectory(lib/fmt)
+   add_library(lib::fmt ALIAS fmt)
+   add_library(lib::fmt-header-only ALIAS fmt-header-only)
+else()
+   find_package(fmt REQUIRED)
 endif()
+
+add_subdirectory(lib/json)
+
+if(${BASYX_BUILD_TESTS})
+    add_subdirectory(lib/gtest)
+    include(GoogleTest)
+endif()
+
+###############################################
+###           Source Directory              ###
+###############################################
+
+add_subdirectory(src/aas)
+add_subdirectory(src/abstraction)
+add_subdirectory(src/logging)
+add_subdirectory(src/shared)
+add_subdirectory(src/utility)
+add_subdirectory(src/vab)
 
 ###############################################
 ###           Test Directory                ###
@@ -87,7 +100,7 @@ endif()
 
 if(${BASYX_BUILD_TESTS})
     include( CTest )
-    add_subdirectory(regression)
+    add_subdirectory(tests)
 endif()
 
 ###############################################
@@ -98,5 +111,5 @@ if(${BASYX_UTILITY_PROJECTS})
     enable_clang_format()
     enable_clang_tidy()
     enable_cppcheck()
-	enable_playground()
+    enable_playground()
 endif()

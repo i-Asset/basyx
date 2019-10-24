@@ -2,9 +2,9 @@ package org.eclipse.basyx.regression.support.processengine.executor;
 
 import java.util.List;
 
+import org.eclipse.basyx.aas.manager.api.IAssetAdministrationShellManager;
 import org.eclipse.basyx.components.processengine.connector.DeviceServiceExecutor;
 import org.eclipse.basyx.regression.support.processengine.SetupAAS;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
 
 /**
  * Service executor used by the process engine, defined for the coilcar test case
@@ -18,8 +18,8 @@ public class CoilcarServiceExecutor extends DeviceServiceExecutor {
 	 * 
 	 * @param connectionmanager for VAB Connection
 	 */
-	public CoilcarServiceExecutor(VABConnectionManager connectionmanager) {
-		super(connectionmanager);
+	public CoilcarServiceExecutor(IAssetAdministrationShellManager manager) {
+		super(manager);
 	}
 
 	/**

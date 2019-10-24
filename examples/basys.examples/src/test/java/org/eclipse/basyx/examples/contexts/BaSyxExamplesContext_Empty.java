@@ -1,7 +1,6 @@
 package org.eclipse.basyx.examples.contexts;
 
-import org.eclipse.basyx.regression.support.server.BaSyxContext;
-
+import org.eclipse.basyx.vab.protocol.http.server.BaSyxContext;
 
 /**
  * BaSyx context that contains no infrastructure

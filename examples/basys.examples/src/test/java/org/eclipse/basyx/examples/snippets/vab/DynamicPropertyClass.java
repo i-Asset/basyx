@@ -6,14 +6,14 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.components.servlet.submodel.EmptyVABLambdaElementServlet;
+import org.eclipse.basyx.components.servlet.submodel.VABLambdaServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
-import org.eclipse.basyx.vab.provider.lambda.VABLambdaProviderHelper;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.modelprovider.lambda.VABLambdaProviderHelper;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -102,7 +102,7 @@ public class DynamicPropertyClass {
 				// - BaSys topology with one AAS Server and one SQL directory
 				new BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory().
 					// Deploy example specific servlets to Tomcat server in this context
-					addServletMapping("/Testsuite/components/BaSys/1.0/devicestatusVAB/*", new EmptyVABLambdaElementServlet())
+					addServletMapping("/Testsuite/components/BaSys/1.0/devicestatusVAB/*", new VABLambdaServlet())
 			);
 
 		
@@ -123,10 +123,10 @@ public class DynamicPropertyClass {
 		// no setter (null) is provided.
 		Map<String, Object> dynamicPropertyVal = VABLambdaProviderHelper.createSimple(new TailoredBaSyxSupplier(), null);
 		// - Update property properties/dynamicExample with dynamic get/set operation
-		connSubModel1.createElement("dynamicExampleProperty", dynamicPropertyVal);
+		connSubModel1.createValue("dynamicExampleProperty", dynamicPropertyVal);
 
 		// Read dynamicExample property
-		Object propertyValue = connSubModel1.readElementValue("dynamicExampleProperty");
+		Object propertyValue = connSubModel1.getModelPropertyValue("dynamicExampleProperty");
 
 		
 		// Compare returned to expected values

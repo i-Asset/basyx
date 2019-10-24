@@ -1,13 +1,16 @@
 package org.eclipse.basyx.regression.cfgprovider.tests;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
+import java.util.Map;
+
 import org.eclipse.basyx.regression.support.directory.ComponentsTestsuiteDirectory;
-import org.eclipse.basyx.regression.support.server.AASHTTPServerResource;
 import org.eclipse.basyx.regression.support.server.context.ComponentsRegressionContext;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.testsuite.regression.vab.protocol.http.AASHTTPServerResource;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -31,12 +34,13 @@ public class TestCFGProvider {
 	 * Makes sure Tomcat Server is started with basyx.components regression test case
 	 */
 	@ClassRule
-	public static AASHTTPServerResource res = AASHTTPServerResource.getTestResource(new ComponentsRegressionContext());
+	public static AASHTTPServerResource res = new AASHTTPServerResource(new ComponentsRegressionContext());
 	
 	
 	/**
 	 * Test basic queries
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void test() throws Exception {
 		// Connect to sub model "CfgFileTestAAS"
@@ -44,18 +48,20 @@ public class TestCFGProvider {
 
 		
 		// Get property value
-		Object value1 = connSubModel.readElementValue("/aas/submodels/sampleCFG/dataElements/cfgProperty1/value");
-		System.out.println("Res:"+value1);
-		System.out.println("ResC:"+value1.getClass());
-		assertTrue(value1.equals("exampleStringValue"));
+		Map<String, Object> value1 = (Map<String, Object>) connSubModel
+				.getModelPropertyValue("/aas/submodels/sampleCFG/dataElements/cfgProperty1/value");
+
+		assertEquals("exampleStringValue", value1.get(SingleProperty.VALUE));
 
 		
 		// Get property value
-		Object value2 = connSubModel.readElementValue("/aas/submodels/sampleCFG/dataElements/cfgProperty2/value");
-		assertTrue(value2.equals("12"));
+		Map<String, Object> value2 = (Map<String, Object>) connSubModel
+				.getModelPropertyValue("/aas/submodels/sampleCFG/dataElements/cfgProperty2/value");
+		assertEquals("12", value2.get(SingleProperty.VALUE));
 
 		// Get property value
-		Object value3 = connSubModel.readElementValue("/aas/submodels/sampleCFG/dataElements/cfgProperty3/value");
-		assertTrue(value3.equals("45.8"));
+		Map<String, Object> value3 = (Map<String, Object>) connSubModel
+				.getModelPropertyValue("/aas/submodels/sampleCFG/dataElements/cfgProperty3/value");
+		assertEquals("45.8", value3.get(SingleProperty.VALUE));
 	}
 }

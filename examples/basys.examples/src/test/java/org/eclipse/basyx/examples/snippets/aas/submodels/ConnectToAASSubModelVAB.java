@@ -1,24 +1,28 @@
 package org.eclipse.basyx.examples.snippets.aas.submodels;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.basyx.aas.api.resources.ISubModel;
-import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElement;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElementCollection;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
+import org.eclipse.basyx.aas.factory.java.MetaModelElementFactory;
+import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
 import org.eclipse.basyx.components.servlet.submodel.SubmodelServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_Empty;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
+import org.eclipse.basyx.examples.support.directory.ExampleAASRegistry;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
-import org.eclipse.basyx.vab.core.proxy.VABElementProxy;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.identifier.Identifier;
+import org.eclipse.basyx.submodel.metamodel.map.identifier.IdentifierType;
+import org.eclipse.basyx.submodel.metamodel.map.qualifier.Identifiable;
+import org.eclipse.basyx.submodel.metamodel.map.qualifier.Referable;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.SubmodelElement;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.ContainerProperty;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.modelprovider.VABElementProxy;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -54,28 +58,32 @@ public class ConnectToAASSubModelVAB {
 		 */
 		@SuppressWarnings("unchecked")
 		public SampleSubModel() {
-			// Set sub model ID
-			setId("sm-001");
+			// Set sub model id and name
+			setIdShort("smName");
+			setIdentification(IdentifierType.Custom, "sm-001");
 
 			// Create factory that helps with property creation
-			// - This factory creates sub model properties and ensures presence of all meta data
+			// - This factory creates sub model properties and ensures presence of all meta
+			// data
 			MetaModelElementFactory fac = new MetaModelElementFactory();
 
 			// Add example properties
 			// - Add simple property
-			getProperties().put(fac.create(new Property(), 234, "prop1"));
+			SingleProperty prop1 = new SingleProperty(234);
+			prop1.setIdShort("prop1");
+			addSubModelElement(prop1);
 
+			SingleProperty prop11 = new SingleProperty(123);
+			prop11.setIdShort("prop11");
 			// - Add container property that holds other properties
-			List<SubmodelElement> containerProperties = fac.createList(
-					fac.create(new Property(), 123, "prop11")
-				);
+			List<SubmodelElement> containerProperties = fac.createList(prop11);
 			// - Add container to property map
-			getProperties().put(fac.createContainer(new SubmodelElementCollection(), containerProperties, fac.emptyList(), "prop2"));
+			addSubModelElement(fac.createContainer(new ContainerProperty(), containerProperties, fac.emptyList(), "prop2"));
 
 			// Add another property manually to sub model container "properties"
-			{
-				((Map<String, Object>) this.get(PROPERTIES)).put("prop3", fac.create(new Property(), 17, "prop3"));
-			}
+			SingleProperty prop3 = new SingleProperty(17);
+			prop3.setIdShort("prop3");
+			((Map<String, Object>) this.get("dataElements")).put("prop3", prop3);
 		}
 	}
 
@@ -90,13 +98,18 @@ public class ConnectToAASSubModelVAB {
 	protected VABConnectionManager connManager = new VABConnectionManager(
 			// Add example specific mappings
 			new ExamplesPreconfiguredDirectory()
-			    // - SDK connectors encapsulate relative path to sub model (/aas/submodels/sm-001)
-				.addMapping("aas-001",    "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel")
-			    .addMapping("sm-001",     "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel")
-			    .addMapping("sm-001VAB",  "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/aas/submodels/sm-001"),
+				.addMapping("aas-001",    "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/")
+			    .addMapping("sm-001",     "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/")
+			    .addMapping("sm-001VAB",  "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/"),
 			// We connect via HTTP
 			new HTTPConnectorProvider());
 
+	protected ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(
+			new ExampleAASRegistry()
+					.addAASMapping("aas-001", "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/")
+					.addSubmodelMapping("aas-001", "sm-001", "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/"),
+			// We connect via HTTP
+			new HTTPConnectorProvider());
 	
 	
 	/**
@@ -122,42 +135,38 @@ public class ConnectToAASSubModelVAB {
 	 */
 	@Test @SuppressWarnings("unchecked")
 	public void accessSubModel() throws Exception {
-		// Create manager using the directory stub and the HTTPConnectorProvider
-		ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(connManager);
-		
-		
 		// Retrieve sub model (created by factory) with SDK connector
-		{
-			// Connect to sub model using lower-level VAB interface
-			VABElementProxy connSubModel1 = this.connManager.connectToVABElement("sm-001VAB");
+		// - Connect to sub model using lower-level VAB interface
+		VABElementProxy connSubModel1 = this.connManager.connectToVABElement("sm-001VAB");
+		Map<String, Object> submodel = (Map<String, Object>) connSubModel1.getModelPropertyValue("");
+		Map<String, Object> smId = (Map<String, Object>) submodel.get(Identifiable.IDENTIFICATION);
 
-			// - Read properties
-			String prop1Id = (String) ((Map<String, Object>) connSubModel1.readElementValue("dataElements/prop1")).get("idShort");
-			int prop1Val = (int) connSubModel1.readElementValue("dataElements/prop1/value");
-			int prop3Val = (int) connSubModel1.readElementValue("dataElements/prop3/value");
-			String prop2Id = (String) ((Map<String, Object>) connSubModel1.readElementValue("dataElements/prop2")).get("idShort");
-			int prop211 = (int) connSubModel1.readElementValue("dataElements/prop2/dataElements/prop11/value");
-			// - Change property value using VAB primitive
-			connSubModel1.updateElementValue("dataElements/prop1/value", 456);
-			// - Read value back using VAB primitive
-			int changedProp = (int) connSubModel1.readElementValue("dataElements/prop1/value");
+		// - Read properties
+		Map<String, Object> prop1 = (Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop1");
+		Map<String, Object> prop2 = (Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop2");
+		Map<String, Object> prop11 = (Map<String, Object>) connSubModel1
+				.getModelPropertyValue("dataElements/prop2/dataElements/prop11");
+		Map<String, Object> prop3 = (Map<String, Object>) connSubModel1.getModelPropertyValue("dataElements/prop3");
 
-			
-			// Create and connect SDK connector
-			ISubModel subModel = manager.retrieveSM("sm-001");
-			// - Retrieve sub model values and compare to expected values
-			String smID     = subModel.getId();
+		// - Change property value using VAB primitive
+		connSubModel1.setModelPropertyValue("dataElements/prop1/value", 456);
 
-			
-			// Check results
-			assertTrue(smID.equals("sm-001"));
-			assertTrue(prop1Id.equals("prop1"));
-			assertTrue(prop1Val == 234);
-			assertTrue(prop3Val == 17);
-			assertTrue(prop2Id.equals("prop2"));
-			assertTrue(prop211 == 123);
-			assertTrue(changedProp == 456);
-		}
+		// - Read value back using VAB primitive
+		Map<String, Object> changedProp1 = (Map<String, Object>) connSubModel1
+				.getModelPropertyValue("dataElements/prop1");
+
+		// - Check results
+		assertEquals("sm-001", smId.get(Identifier.ID));
+		assertEquals("smName", submodel.get(Referable.IDSHORT));
+		assertEquals("prop1", prop1.get(Referable.IDSHORT));
+		assertEquals(234, prop1.get(SingleProperty.VALUE)); // old value of prop1 has been stored locally
+		assertEquals(456, changedProp1.get(SingleProperty.VALUE)); // new value is 456
+		assertEquals("prop2", prop2.get(Referable.IDSHORT));
+		assertEquals("prop11", prop11.get(Referable.IDSHORT));
+		assertEquals(123, prop11.get(SingleProperty.VALUE));
+		assertEquals("prop3", prop3.get(Referable.IDSHORT));
+		assertEquals(17, prop3.get(SingleProperty.VALUE));
+
 	}
 }
 

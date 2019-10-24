@@ -4,9 +4,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.valuetypedef.PropertyValueTypeDefHelper;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.valuetypedef.PropertyValueTypeDefHelper;
 import org.junit.Test;
 
 
@@ -38,7 +38,7 @@ public class CreateAASSubModelVAB {
 		@SuppressWarnings("unchecked")
 		public SampleSubModel() {
 			// Set sub model ID
-			setId("sm-001M");
+			setIdShort("sm-001M");
 
 			// Add example properties
 			// - Add simple property with value and idShort meta elements
@@ -55,9 +55,9 @@ public class CreateAASSubModelVAB {
 			
 			// Add another property manually to sub model container "properties"
 			// - Using the Property class ensures presence of all meta properties
-			Property addedProperty = new Property(); 
-			addedProperty.setValue(17);
-			addedProperty.setId("prop3");
+			SingleProperty addedProperty = new SingleProperty(); 
+			addedProperty.set(17);
+			addedProperty.setIdShort("prop3");
 			// - Add property to sub model container "properties"
 			{((Map<String, Object>) this.get("properties")).put("prop3", addedProperty);}
 		}

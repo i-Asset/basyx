@@ -11,7 +11,7 @@ import org.eclipse.basyx.components.provider.BaseConfiguredProvider;
 import org.eclipse.basyx.components.sqlprovider.query.DynamicSQLQuery;
 import org.eclipse.basyx.components.sqlprovider.query.DynamicSQLRunner;
 import org.eclipse.basyx.components.sqlprovider.query.DynamicSQLUpdate;
-import org.eclipse.basyx.vab.provider.lambda.VABLambdaHandler;
+import org.eclipse.basyx.vab.modelprovider.lambda.VABLambdaHandler;
 
 
 
@@ -104,6 +104,13 @@ public class SQLPreconfiguredSubModelProvider extends BaseConfiguredProvider {
 	protected Set<String> updateOperations = new HashSet<>();
 
 	
+	public static final String DBUSER = "dbuser";
+	public static final String DBPASS = "dbpass";
+	public static final String DBURL = "dburl";
+	public static final String DRIVER = "driver";
+	public static final String PREFIX = "prefix";
+	public static final String PROPERTIES = "properties";
+	public static final String OPERATIONS = "operations";
 	
 	
 	/**
@@ -126,17 +133,17 @@ public class SQLPreconfiguredSubModelProvider extends BaseConfiguredProvider {
 
 		
 		// Extract SQL properties
-		sqlUser = cfgValues.getProperty("basyx.sql.dbuser");
-		sqlPass = cfgValues.getProperty("basyx.sql.dbpass");
-		sqlURL  = cfgValues.getProperty("basyx.sql.dburl");
+		sqlUser = cfgValues.getProperty(buildSqlCfgName(DBUSER));
+		sqlPass = cfgValues.getProperty(buildSqlCfgName(DBPASS));
+		sqlURL  = cfgValues.getProperty(buildSqlCfgName(DBURL));
 
 		// Extract SQL driver properties
-		sqlDriver = cfgValues.getProperty("basyx.sql.driver");
-		sqlPrefix = cfgValues.getProperty("basyx.sql.prefix");
+		sqlDriver = cfgValues.getProperty(buildSqlCfgName(DRIVER));
+		sqlPrefix = cfgValues.getProperty(buildSqlCfgName(PREFIX));
 		
 		// Load and parse SQL property and operation connections
-		sqlPropertyConnections.addAll(splitString(cfgValues.getProperty("basyx.sql.properties")));
-		sqlOperationConnections.addAll(splitString(cfgValues.getProperty("basyx.sql.operations")));
+		sqlPropertyConnections.addAll(splitString(cfgValues.getProperty(buildSqlCfgName(PROPERTIES))));
+		sqlOperationConnections.addAll(splitString(cfgValues.getProperty(buildSqlCfgName(OPERATIONS))));
 
 		
 		
@@ -241,7 +248,7 @@ public class SQLPreconfiguredSubModelProvider extends BaseConfiguredProvider {
 		
 		System.out.println("Putting SQL:"+name);
 		// Add property as map of lambdas
-		submodelData.getProperties().put(name, createSubmodelElement(name, value, cfgValues));
+		submodelData.getDataElements().put(name, createSubmodelElement(name, value, cfgValues));
 	}
 
 	
@@ -488,4 +495,8 @@ public class SQLPreconfiguredSubModelProvider extends BaseConfiguredProvider {
 		// Execute query and return result
 		query.runUpdate(parameter);
 	}*/
+	
+	public static String buildSqlCfgName(String valueName) {
+		return BaseConfiguredProvider.buildCfgName("basyx.sql", valueName);
+	}
 }

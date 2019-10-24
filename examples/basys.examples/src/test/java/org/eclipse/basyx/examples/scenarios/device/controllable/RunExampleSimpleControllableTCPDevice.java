@@ -2,9 +2,6 @@ package org.eclipse.basyx.examples.scenarios.device.controllable;
 
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.basyx.aas.backend.connector.JSONConnector;
-import org.eclipse.basyx.aas.backend.connector.basyx.BaSyxConnector;
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_1MemoryAASServer_1SQLDirectory;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
 import org.eclipse.basyx.examples.examplescenario.BaSyxExampleScenario;
@@ -13,11 +10,12 @@ import org.eclipse.basyx.examples.mockup.device.ControllableTCPDeviceMockup;
 import org.eclipse.basyx.examples.mockup.devicemanager.BaSyxTCPControlManufacturingDeviceManager;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
 import org.eclipse.basyx.models.controlcomponent.ExecutionState;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
+import org.eclipse.basyx.vab.coder.json.connector.JSONConnector;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.protocol.basyx.connector.BaSyxConnector;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-
 
 /**
  * Run example for controllable device
@@ -27,7 +25,7 @@ import org.junit.Test;
  */
 public class RunExampleSimpleControllableTCPDevice extends BaSyxExampleScenario {
 
-	
+
 	/**
 	 * VAB connection manager backend
 	 */

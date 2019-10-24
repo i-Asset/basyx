@@ -5,22 +5,20 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.eclipse.basyx.aas.api.resources.IOperation;
-import org.eclipse.basyx.aas.api.resources.ISubModel;
-import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.operation.Operation;
+import org.eclipse.basyx.aas.factory.java.MetaModelElementFactory;
+import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
 import org.eclipse.basyx.components.servlet.submodel.SubmodelServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_Empty;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
-import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
+import org.eclipse.basyx.examples.support.directory.ExampleAASRegistry;
+import org.eclipse.basyx.submodel.metamodel.api.ISubModel;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.operation.IOperation;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.operation.Operation;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-
 
 /**
  * Code snippet that illustrates the definition and invocation of sub model operations
@@ -52,16 +50,20 @@ public class InvokeSubModelOperationSDK {
 		 */
 		public SampleSubModel() {
 			// Set sub model ID
-			setId("sm-001");
+			setIdShort("sm-001");
 
 			// Support creation of properties and operations
 			MetaModelElementFactory fac = new MetaModelElementFactory();
 
 			// Define operations
-			getOperations().put("operation1", fac.createOperation(new Operation(), (Function<Object[], Object>) (v) -> {
+			Operation op1 = new Operation();
+			op1.setIdShort("operation1");
+			getOperations().put("operation1", fac.createOperation(op1, (Function<Object[], Object>) (v) -> {
 				return operation1();
 			}));
-			getOperations().put("operation2", fac.createOperation(new Operation(), (Function<Object[], Object>) (v) -> {
+			Operation op2 = new Operation();
+			op2.setIdShort("operation2");
+			getOperations().put("operation2", fac.createOperation(op2, (Function<Object[], Object>) (v) -> {
 				return operation2((int) v[0], (int) v[1]);
 			}));
 
@@ -90,14 +92,13 @@ public class InvokeSubModelOperationSDK {
 	 * The connection manager uses a preconfigured directory for resolving IDs to 
 	 * network addresses, and a HTTP connector to connect to VAB objects.
 	 */
-	protected VABConnectionManager connManager = new VABConnectionManager(
+	protected ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(
 			// Add example specific mappings
-			new ExamplesPreconfiguredDirectory()
-			    // - SDK connectors encapsulate relative path to sub model (/aas/submodels/sm-001)
-			    .addMapping("sm-001",     "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel"),
+			new ExampleAASRegistry()
+					.addAASMapping("aas-001", "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/")
+					.addSubmodelMapping("aas-001", "sm-001", "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/"),
 			// We connect via HTTP
 			new HTTPConnectorProvider());
-
 	
 	
 	/**
@@ -114,7 +115,7 @@ public class InvokeSubModelOperationSDK {
 				// Servlets for example snippet
 				new BaSyxExamplesContext_Empty().
 					// Deploy example specific servlets to Tomcat server in this context
-					addServletMapping("/Testsuite/components/BaSys/1.0/SampleModel/*",       new SubmodelServlet(new SampleSubModel()))
+					addServletMapping("/Testsuite/components/BaSys/1.0/SampleModel/*",  new SubmodelServlet(new SampleSubModel()))
 			);
 
 	
@@ -123,14 +124,10 @@ public class InvokeSubModelOperationSDK {
 	 */
 	@Test
 	public void accessSubModel() throws Exception {
-		// Create manager using the directory stub and the HTTPConnectorProvider
-		ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(connManager);
-		
-		
 		// Retrieve sub model (created by factory) with SDK connector
 		{
 			// Create and connect SDK connector
-			ISubModel subModel = manager.retrieveSM("sm-001");
+			ISubModel subModel = manager.retrieveSubModel(new ModelUrn("aas-001"), new ModelUrn("sm-001"));
 			
 			// Sub model operations
 			Map<String, IOperation> operations = subModel.getOperations();

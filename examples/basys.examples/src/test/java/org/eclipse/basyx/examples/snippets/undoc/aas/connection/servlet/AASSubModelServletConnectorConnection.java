@@ -1,26 +1,29 @@
 package org.eclipse.basyx.examples.snippets.undoc.aas.connection.servlet;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.basyx.aas.api.resources.IAssetAdministrationShell;
-import org.eclipse.basyx.aas.api.resources.IContainerProperty;
-import org.eclipse.basyx.aas.api.resources.ISingleProperty;
-import org.eclipse.basyx.aas.api.resources.ISubModel;
-import org.eclipse.basyx.aas.backend.connected.ConnectedAssetAdministrationShellManager;
-import org.eclipse.basyx.aas.backend.connector.http.HTTPConnectorProvider;
-import org.eclipse.basyx.aas.metamodel.factory.MetaModelElementFactory;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.SubModel;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElement;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.SubmodelElementCollection;
-import org.eclipse.basyx.aas.metamodel.hashmap.aas.submodelelement.property.Property;
+import org.eclipse.basyx.aas.factory.java.MetaModelElementFactory;
+import org.eclipse.basyx.aas.manager.ConnectedAssetAdministrationShellManager;
+import org.eclipse.basyx.aas.metamodel.map.descriptor.ModelUrn;
 import org.eclipse.basyx.components.servlet.submodel.SubmodelServlet;
 import org.eclipse.basyx.examples.contexts.BaSyxExamplesContext_Empty;
 import org.eclipse.basyx.examples.deployment.BaSyxDeployment;
+import org.eclipse.basyx.examples.support.directory.ExampleAASRegistry;
 import org.eclipse.basyx.examples.support.directory.ExamplesPreconfiguredDirectory;
-import org.eclipse.basyx.vab.core.VABConnectionManager;
+import org.eclipse.basyx.submodel.metamodel.api.ISubModel;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.IDataElement;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.property.IContainerProperty;
+import org.eclipse.basyx.submodel.metamodel.api.submodelelement.property.ISingleProperty;
+import org.eclipse.basyx.submodel.metamodel.map.SubModel;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.SubmodelElement;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.ContainerProperty;
+import org.eclipse.basyx.submodel.metamodel.map.submodelelement.property.SingleProperty;
+import org.eclipse.basyx.vab.manager.VABConnectionManager;
+import org.eclipse.basyx.vab.protocol.http.connector.HTTPConnectorProvider;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -51,7 +54,7 @@ public class AASSubModelServletConnectorConnection {
 		@SuppressWarnings("unchecked")
 		public SampleSubModel() {
 			// Set sub model ID
-			setId("sm-001");
+			setIdShort("sm-001");
 
 			// Create factory that helps with property creation
 			// - This factory creates sub model properties and ensures presence of all meta data
@@ -59,33 +62,49 @@ public class AASSubModelServletConnectorConnection {
 
 			// Add example properties
 			// - Add simple property
-			getProperties().put(fac.create(new Property(), 234, "prop1"));
+			SingleProperty prop1 = new SingleProperty(234);
+			prop1.setIdShort("prop1");
+			addSubModelElement(prop1);
 
+			SingleProperty prop11 = new SingleProperty(123);
+			prop11.setIdShort("prop11");
 			// - Add container property that holds other properties
 			List<SubmodelElement> containerProperties = fac.createList(
-					fac.create(new Property(), 123, "prop11")
+					prop11
 				);
 			// - Add container to property map
-			getProperties().put(fac.createContainer(new SubmodelElementCollection(), containerProperties, fac.emptyList(), "prop2"));
+			ContainerProperty container = fac.createContainer(new ContainerProperty(),
+					containerProperties,
+					fac.emptyList(), "prop2");
+			addSubModelElement(container);
 
 			// Add another property manually to sub model container "properties"
+			SingleProperty prop3 = new SingleProperty(17);
+			prop3.setIdShort("prop3");
 			{
-				((Map<String, Object>) this.get(PROPERTIES)).put("prop3", fac.create(new Property(), 17, "prop3"));
+				((Map<String, Object>) this.get("dataElements")).put("prop3", prop3);
 			}
 		}
 	}
+	
+	/**
+	 * Create manager using the directory stub an the HTTPConnectorProvider
+	 */
+	ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(
+			// Add example specific mappings
+			new ExampleAASRegistry()
+			    // - SDK connectors encapsulate relative path to sub model (/aas/submodels/sm-001)
+					.addAASMapping("aas-001", "") // No AAS is provided in this example
+					.addSubmodelMapping("aas-001", "sm-001", "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel"),
+			// We connect via HTTP
+			new HTTPConnectorProvider());
 
-	
-	
 	/**
 	 * VAB connection manager backend
 	 */
 	protected VABConnectionManager connManager = new VABConnectionManager(
 			// Add example specific mappings
 			new ExamplesPreconfiguredDirectory()
-			    // - SDK connectors encapsulate relative path to sub model (/aas/submodels/sm-001)
-				.addMapping("aas-001",    "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel")
-			    .addMapping("sm-001",     "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel")
 			    // - VAB needs to know the relative path of the sub model that is defined by AAS meta model
 			    .addMapping("sm-001VAB",  "http://localhost:8080/basys.examples/Testsuite/components/BaSys/1.0/SampleModel/aas/submodels/sm-001"),
 			// We connect via HTTP
@@ -111,25 +130,20 @@ public class AASSubModelServletConnectorConnection {
 	 */
 	@Test
 	public void accessSubModel() throws Exception {
-		// Create manager using the directory stub an the HTTPConnectorProvider
-		ConnectedAssetAdministrationShellManager manager = new ConnectedAssetAdministrationShellManager(connManager);
-		
 		
 		// Create and connect SDK connector
-		ISubModel subModel = manager.retrieveSM("sm-001");
+		ISubModel subModel = manager.retrieveSubModel(new ModelUrn("aas-001"), new ModelUrn("sm-001"));
 		
 		// - Retrieve sub model values and compare to expected values
-		assertTrue(subModel.getId().equals("sm-001"));
-		assertTrue(subModel.getProperties().get("prop1").getId().equals("prop1"));
-		assertTrue((int) ((ISingleProperty) subModel.getProperties().get("prop1")).get() == 234);
-		assertTrue((int) ((ISingleProperty) subModel.getProperties().get("prop3")).get() == 17);
-		assertTrue(subModel.getProperties().get("prop2").getId().equals("prop2"));
-		assertTrue((int) ((ISingleProperty) ((IContainerProperty) subModel.getProperties().get("prop2")).getProperties().get("prop11")).get() == 123);
+		assertTrue(subModel.getIdShort().equals("sm-001"));
+		assertTrue(subModel.getDataElements().get("prop1").getIdShort().equals("prop1"));
+		assertTrue((int) ((ISingleProperty) subModel.getDataElements().get("prop1")).get() == 234);
+		assertTrue((int) ((ISingleProperty) subModel.getDataElements().get("prop3")).get() == 17);
 
-		// Retrieve dummy AAS (created by factory) with SDK connector
-		IAssetAdministrationShell shell = manager.retrieveAAS("aas-001");
-		// - Retrieve AAS values and compare to expected values
-		assertTrue(shell.getId().equals("---"));
+		IContainerProperty prop2 = (IContainerProperty) subModel.getDataElements().get("prop2");
+		assertEquals("prop2", prop2.getIdShort());
+		Map<String, IDataElement> dataElements = prop2.getDataElements();
+		assertEquals(123, ((ISingleProperty) dataElements.get("prop11")).get());
 	}
 }
 
