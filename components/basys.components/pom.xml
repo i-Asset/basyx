@@ -10,12 +10,17 @@
   	<properties>
   		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-  <repositories>
-	  <repository>
-	    <id>data-local</id>
-	    <name>data</name>
-	    <url>file://${project.basedir}/repo</url>
-	  </repository>
+  
+ 	<repositories>
+		<repository>
+			<id>mule</id>
+			<name>Mule Repository</name>
+			<url>https://repository.mulesoft.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
    <build>
@@ -32,6 +37,21 @@
         </configuration>
       </plugin>
       
+				<!-- Also generate jar for tests -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+      
+      
       <!-- Attach sources to jar file -->
       <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -46,25 +66,6 @@
                    </execution>
             </executions>
       </plugin> 
-      
-		<!-- Generate separate jar for tests and exclude logback.xml from generated jars -->
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-jar-plugin</artifactId>
-			<version>3.1.1</version>
-			<configuration>
-				<excludes>
-					<exclude>**/logback.xml</exclude>
-				</excludes>
-			</configuration>
-			<executions>
-				<execution>
-					<goals>
-						<goal>test-jar</goal>
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
       
 	 <plugin>
         <artifactId>maven-war-plugin</artifactId>
@@ -249,6 +250,11 @@
 		    <version>1.4.197</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.xml.xquery/xqj-api (Add from 
 			local repository because jar cannot be found on maven central -->
 		<dependency>
@@ -266,7 +272,7 @@
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>saxon-xqj</artifactId>
-			<version>8.9</version>
+			<version>8.9.0.4</version>
 		</dependency>
 
 
@@ -282,16 +288,22 @@
 			<version>2.8.5</version>
 		</dependency>
 	
-		<!-- Add BaSys SDK -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+		
+		<!-- Add BaSys SDK from local repository -->
 		<dependency>
 			<groupId>org.eclipse.basyx</groupId>
-			<artifactId>basyx.sdk</artifactId>
+			<artifactId>basyx-aas</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		<!-- Adds additional classes of the BaSys SDK for tests -->
+		<!--  Add the BaSyx SDK test dependencies (they are not transitive) -->
 		<dependency>
 			<groupId>org.eclipse.basyx</groupId>
-			<artifactId>basyx.sdk</artifactId>
+			<artifactId>basyx-vab</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
