@@ -34,6 +34,9 @@ spec:
     command:
     - cat
     tty: true
+    env:
+    - name: MAVEN_CONFIG
+      value: /home/jenkins/agent/.m2
 """
     }
   }
@@ -53,6 +56,7 @@ spec:
           steps {
               container('maven') {
                   sh '''
+                     mkdir /home/jenkins/agent/.m2
                      chmod +x ./ci/build_java.sh
                      ./ci/build_java.sh
                      '''

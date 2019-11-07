@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-MVN="mvn "
+MVN="mvn -Duser.home=/home/jenkins/agent"
 
 CWD=$(pwd)
 echo "CWD: $CWD"
