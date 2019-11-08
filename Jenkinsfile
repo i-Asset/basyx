@@ -17,8 +17,8 @@ spec:
       value: admin
     - name: PGDATA
       value: /run/postgresql/data
-  - name: cmake
-    image: rikorose/gcc-cmake:latest
+  - name: cpp
+    image: gcc:latest
     command:
     - cat
     tty: true
@@ -59,6 +59,17 @@ spec:
                      mkdir /home/jenkins/agent/.m2
                      chmod +x ./ci/build_java.sh
                      ./ci/build_java.sh
+                     '''
+              }
+          }
+      }
+      stage('C++ SDK Tests') {
+          steps {
+              container('cpp') {
+                  sh '''
+                     apt-get update && apt-get install cmake
+                     chmod +x ./ci/build_cpp.sh
+                     ./ci/build_cpp.sh
                      '''
               }
           }
