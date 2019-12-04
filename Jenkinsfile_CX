@@ -12,10 +12,10 @@ spec:
     resources:
       requests:
         memory: "2Gi"
-        cpu: "1"
+        cpu: "0.5"
       limits:
         memory: "2Gi"
-        cpu: "1"
+        cpu: "0.5"
     command: 
     - cat
     tty: true
@@ -28,11 +28,11 @@ spec:
     image: maven:latest
     resources:
       requests:
-        memory: "2Gi"
-        cpu: "1"
+        memory: "3Gi"
+        cpu: "0.75"
       limits:
-        memory: "2Gi"
-        cpu: "1"
+        memory: "3Gi"
+        cpu: "0.75"
     command:
     - cat
     tty: true
@@ -43,11 +43,11 @@ spec:
     image: iesetps/basyx-ci-cpp:latest
     resources:
       requests:
-        memory: "2Gi"
-        cpu: "1"
+        memory: "3Gi"
+        cpu: "0.75"
       limits:
-        memory: "2Gi"
-        cpu: "1"
+        memory: "3Gi"
+        cpu: "0.75"
     command:
     - cat
     tty: true
