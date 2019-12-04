@@ -9,6 +9,13 @@ spec:
   containers:
   - name: postgresql
     image: postgres:latest
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "1"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
     command: 
     - cat
     tty: true
@@ -36,11 +43,11 @@ spec:
     image: iesetps/basyx-ci-cpp:latest
     resources:
       requests:
-        memory: "4Gi"
-        cpu: "2"
+        memory: "2Gi"
+        cpu: "1"
       limits:
-        memory: "4Gi"
-        cpu: "2"
+        memory: "2Gi"
+        cpu: "1"
     command:
     - cat
     tty: true
