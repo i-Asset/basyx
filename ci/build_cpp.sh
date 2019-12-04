@@ -18,6 +18,6 @@ then
 
     mkdir build && cd build
     cmake ../sdks/c++/basys.sdk.cc -DBASYX_UTILITY_PROJECTS=OFF -DBUILD_SHARED_LIBS=ON
-    make all
+    make tests_util tests_vab
     ctest
 fi
