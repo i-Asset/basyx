@@ -32,7 +32,7 @@ spec:
     env:
     - name: MAVEN_CONFIG
       value: /home/jenkins/agent/.m2
-  - name: basys.sdk.cpp
+  - name: cpp
     image: iesetps/basyx-ci-cpp:latest
     resources:
       requests:
@@ -72,7 +72,7 @@ spec:
       }
       stage('C++ SDK Tests') {
           steps {
-              container('basys.sdk.cpp') {
+              container('cpp') {
                   sh '''
                      chmod +x ./ci/build_cpp.sh
                      ./ci/build_cpp.sh
