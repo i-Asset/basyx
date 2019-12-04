@@ -34,6 +34,13 @@ spec:
       value: /home/jenkins/agent/.m2
   - name: cpp
     image: iesetps/basyx-ci-cpp:latest
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "4Gi"
+        cpu: "2"
     command:
     - cat
     tty: true
