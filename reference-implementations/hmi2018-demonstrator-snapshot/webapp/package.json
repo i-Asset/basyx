@@ -63,7 +63,7 @@
         "ngx-uploader": "4.2.4",
         "ngx-cookie": "3.0.1",
 
-        "yarn": "1.5.1",
+        "yarn": "1.22.0",
 
         "ngx-contextmenu": "4.2.0",
         "ngx-toastr": "8.4.0",
