@@ -53,7 +53,7 @@
         "bpmn-js": "1.0.3",
         "font-awesome": "4.7.0",
         "angular2-uuid": "1.1.1",
-        "jquery": "3.3.1",
+        "jquery": "3.5.0",
         "electron": "1.6.11",
         "electron-connect": "0.4.8",
         "electron-packager": "8.7.1",
